@@ -1,56 +1,63 @@
-# Welcome to your Expo app 👋
+# Dust Off
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A randomized photo gallery and slideshow for iOS and Android. Surfaces the photos you forgot you had — local-only, no cloud, no telemetry.
+
+## What this is
+
+Most people have thousands of photos sitting on their phone they never scroll back through. Dust Off's wedge is _serendipitous rediscovery_: random-by-default sort plus a dedicated, gesture-first slideshow tuned for libraries of 5k–50k photos.
+
+This is a hobby project, not a launch. The product spec — including locked design system and state-architecture decisions — lives in [`docs/PRD.md`](docs/PRD.md).
+
+## Stack
+
+- Expo SDK 55 + Expo Router 55 (typed routes, file-based routing)
+- React 19.2 with React Compiler enabled — manual `useMemo` / `useCallback` are usually unnecessary
+- React Native 0.83 on the New Architecture (Fabric + TurboModules)
+- TypeScript strict mode
+- State: TanStack Query (server-ish) + Zustand `persist` (preferences, favorites) + plain Zustand (transient)
+- Lists: `@shopify/flash-list`; Images: `expo-image`; Slideshow lightbox: `@nandorojo/galeria`
+- Animations: `react-native-reanimated` 4.x + `react-native-gesture-handler`
 
 ## Get started
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
 ```bash
-npm run reset-project
+npm install
+npm start            # Metro dev server (use this for JS-only changes)
+npm run ios          # full native build + launch dev client
+npm run android      # same, Android side
+npm run lint
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+The project uses a development client (`expo-dev-client`). For JS-only iteration, `npm start` on top of an already-installed dev client is fastest. After native dependency or `app.json` plugin changes, regenerate with `npx expo prebuild --clean` and rebuild.
 
-### Other setup steps
+There is no test runner configured.
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## Privacy posture
 
-## Learn more
+Privacy is architectural, not optional. Per PRD requirements P-1 through P-5:
 
-To learn more about developing your project with Expo, look at the following resources:
+- No network calls during normal usage (verified by airplane-mode test)
+- No telemetry, analytics, or crash reporting SDKs in the binary
+- No camera, microphone, location, contacts, or notification permissions — only photos
+- All preferences stored locally; photo metadata never leaves the device
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Adding a dependency that violates any of these requires replacing or wrapping it.
 
-## Join the community
+## Repository map
 
-Join our community of developers creating universal apps.
+- `src/app/` — Expo Router routes (file-based, in a `src/`-prefixed layout)
+- `src/theme/` — design tokens (palette, motion, typography, theme provider)
+- `src/state/` — Zustand stores (preferences, favorites)
+- `src/queries/` — TanStack queries (assets, permission)
+- `src/actions/` — compound cross-store actions (e.g. `useOnboardingComplete`)
+- `src/components/` — UI primitives (Button, EmptyState, etc.)
+- `src/lib/` — adapters and helpers (async-storage, media-library wrapper, permission helper, strings)
+- `docs/PRD.md` — product requirements + locked design and state decisions (source of truth)
+- `docs/perf-rig.md`, `docs/perf-baseline-phase0.md` — perf measurement infrastructure (rig in place, runs deferred)
+- `CLAUDE.md` — guidance for AI-assisted development on this codebase
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Path aliases: `@/*` → `./src/*` and `@/assets/*` → `./assets/*`. Always import via aliases.
+
+## Continuous Native Generation
+
+`/ios` and `/android` are gitignored and regenerated from `app.json`. Never edit generated native files by hand — changes will be wiped. All native config (permissions, splash, icons, plugins) goes through `app.json` `plugins`.
