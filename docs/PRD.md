@@ -632,6 +632,8 @@ src/
 
 ### Phase 6 — Slideshow engine
 
+**Status: Implementation landed 2026-05-10.** Static checks clean (`npm run lint`, `npx tsc --noEmit`, iOS bundle export). On-device walkthrough is pending. The pill's Shuffle tap (Phase 4 no-op stub) now starts a slideshow via `useStartSlideshow` against the current scope (All / Favorites / [Album]). Tap-center in theater toggles play/pause. The hairline DS-13 progress bar at the top edge cross-fades in while playing and re-runs its sweep on every state mutation via a `generation` counter — that decouples timer state from the visual sweep, which is also what makes SM-10β (resume-from-pause restarts full duration) fall out for free. Cross-fade duration honors `slideTransition` (cross-fade = 400ms, hard-cut = 0ms) read imperatively so settings changes apply on the next slide. `useKeepAwakeWhilePlaying` (S-15) and `useAppStatePause` (D-9 / SM-10γ — pauses on inactive/background, never auto-resumes) are mounted at the screen level. S-17 has two pathways: cache-disappearance triggers `skipUnavailable` from a watcher effect; render failure of the displayed photo triggers it via `<Image onError>` plumbed through `theater-viewer.tsx`. `skipUnavailable` filters from both `queue` and `unshuffledIds` so a post-exhaustion reshuffle can't re-emit the bad ID. Pinch-zoom while playing pauses the slideshow (S-9 reads "pinch+pan when paused" — pause-on-pinch is the natural interpretation). The slideshow store is **route-scoped** via Zustand's `createStore()` + `<SlideshowStoreProvider>` mounted in `theater/_layout.tsx`; provider tear-down imperatively calls `pause()` so no orphaned `setTimeout` survives. **Shake-to-shuffle (S-13/S-14), the source picker (DS-27), the gesture-guide overlay (DS-19), and `Slideshow these N` from selection are deferred to Phase 7 by design** — they all build on the engine that landed here. See `git log --grep='Phase 6'` for the commit boundary once committed.
+
 **Goal:** Autoplay queue with full timing and lifecycle behavior.
 
 **Builds on:** Phase 5.
@@ -641,10 +643,10 @@ src/
 - `useSlideshowStore` factory + `<SlideshowStoreProvider>` (SM-7, SM-10)
 - Centralized `_scheduleNext()` timer in store actions (SM-10)
 - Cross-fade and hard cut transitions (S-3)
-- Duration presets 3 / 5 / 8 / 10 / 15s with default 8 (S-2)
+- Duration presets 3 / 5 / 8 / 10 / 15s with default 8 (S-2) — runtime read from `usePreferencesStore.slideDurationSec`; settings UI lands in Phase 8
 - Hairline progress bar visible only while playing (DS-13)
 - `useKeepAwakeWhilePlaying`, `useAppStatePause` (D-9, SM-10γ)
-- `useAssetLoadFailureSkip` (S-17)
+- `useAssetLoadFailureSkip` (S-17) — landed inline as `<Image onError>` plumbed to `skipUnavailable` plus the cache-disappearance watcher; no separate hook
 - Shuffle-queue management with no-repeats-until-exhausted invariant (S-5, S-6)
 - Resume-from-pause restarts full duration (SM-10β)
 
