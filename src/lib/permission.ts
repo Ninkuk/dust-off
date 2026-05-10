@@ -6,9 +6,16 @@ import { PermissionStatus } from "expo-media-library";
  * GRANTED | UNDETERMINED | DENIED. Treat both granted and limited as
  * "cleared to use the app" per D-4.
  */
+const LIMITED = "limited" as PermissionStatus;
+
 export function isPermissionCleared(
   status: PermissionStatus | undefined,
 ): boolean {
-  if (!status) return false;
-  return status === PermissionStatus.GRANTED || (status as string) === "limited";
+  return status === PermissionStatus.GRANTED || status === LIMITED;
+}
+
+export function isPermissionLimited(
+  status: PermissionStatus | undefined,
+): boolean {
+  return status === LIMITED;
 }

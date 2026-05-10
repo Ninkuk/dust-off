@@ -24,4 +24,16 @@ export const strings = {
     albums: "Albums",
     settings: "Settings",
   },
+  gallery: {
+    sortLabels: {
+      random: "Random",
+      newest: "Newest",
+      oldest: "Oldest",
+      name: "Name",
+    },
+    sortSheetTitle: "Sort",
+    formatCount: (count: number) => count.toLocaleString(),
+    sortStripA11y: (label: string, count: number) =>
+      `${label}, ${count} photos`,
+  },
 } as const;
