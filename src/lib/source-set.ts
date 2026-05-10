@@ -1,3 +1,6 @@
+// Synthetic sentinel — not a real OS album. Drives drill-in branching.
+export const FAVORITES_ALBUM_ID = "@dust-off/favorites";
+
 export type SourceSet =
   | { kind: "all" }
   | { kind: "favorites" }

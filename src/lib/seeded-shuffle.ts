@@ -9,6 +9,14 @@ function mulberry32(seed: number): () => number {
   };
 }
 
+function hashString(s: string): number {
+  let h = 0x811c9dc5 | 0;
+  for (let i = 0; i < s.length; i++) {
+    h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
+  }
+  return h | 0;
+}
+
 export function seededShuffle<T>(items: readonly T[], seed: number): T[] {
   const out = items.slice();
   const rand = mulberry32(seed);
@@ -19,4 +27,14 @@ export function seededShuffle<T>(items: readonly T[], seed: number): T[] {
     out[j] = tmp;
   }
   return out;
+}
+
+export function pickIndexFromSeed(
+  scope: string,
+  seed: number,
+  length: number,
+): number {
+  if (length <= 0) return 0;
+  const rand = mulberry32(seed ^ hashString(scope));
+  return Math.floor(rand() * length);
 }

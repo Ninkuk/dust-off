@@ -18,21 +18,30 @@ const mockGetAssetsAsync: typeof MediaLibrary.getAssetsAsync = async (
   options,
 ) => {
   const { assets } = loadMockData();
+  const albumId =
+    options?.album == null
+      ? undefined
+      : typeof options.album === "string"
+        ? options.album
+        : options.album.id;
+  const pool = albumId
+    ? assets.filter((a) => a.albumId === albumId)
+    : assets;
   const first = options?.first ?? 20;
   const cursor = options?.after;
   const startIndex = (() => {
     if (cursor == null) return 0;
     const id = typeof cursor === "string" ? cursor : cursor.id;
-    const idx = assets.findIndex((a) => a.id === id);
+    const idx = pool.findIndex((a) => a.id === id);
     return idx >= 0 ? idx + 1 : 0;
   })();
-  const slice = assets.slice(startIndex, startIndex + first);
+  const slice = pool.slice(startIndex, startIndex + first);
   const endIndex = startIndex + slice.length;
   return {
     assets: slice,
     endCursor: slice.length > 0 ? slice[slice.length - 1].id : "",
-    hasNextPage: endIndex < assets.length,
-    totalCount: assets.length,
+    hasNextPage: endIndex < pool.length,
+    totalCount: pool.length,
   };
 };
 
