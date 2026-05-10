@@ -24,10 +24,12 @@ export function MorphingPill({
   scope,
   onFavoriteAll,
   onDeleteAll,
+  onShuffle,
 }: {
   scope: PillScope;
   onFavoriteAll: () => void;
   onDeleteAll: () => void;
+  onShuffle: () => void;
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -40,7 +42,7 @@ export function MorphingPill({
 
   const handleShufflePress = () => {
     selectionTick();
-    // Phase 6 wires this to startSlideshow.
+    onShuffle();
   };
 
   const handleActionsPress = () => {

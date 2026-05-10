@@ -4,6 +4,7 @@ import { StyleSheet, View } from "react-native";
 import { useBulkDelete } from "@/actions/use-bulk-delete";
 import { useBulkFavorite } from "@/actions/use-bulk-favorite";
 import { useReshuffleGallery } from "@/actions/use-reshuffle-gallery";
+import { useStartSlideshow } from "@/actions/use-start-slideshow";
 import { EmptyState } from "@/components/empty-state";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { MorphingPill } from "@/components/morphing-pill";
@@ -46,6 +47,7 @@ export default function AlbumGalleryScreen() {
   const reshuffle = useReshuffleGallery();
   const bulkFavorite = useBulkFavorite();
   const bulkDelete = useBulkDelete();
+  const startSlideshow = useStartSlideshow();
   const selectedIds = useSelectionStore((s) => s.selectedIds);
   const cancelSelection = useSelectionStore((s) => s.cancel);
 
@@ -89,13 +91,19 @@ export default function AlbumGalleryScreen() {
 
   const handleFavoriteAll = () => bulkFavorite([...selectedIds]);
   const handleDeleteAll = () => bulkDelete([...selectedIds]);
+  const handleShuffle = () =>
+    startSlideshow(
+      isFavorites
+        ? { source: "favorites", assets: allAssets }
+        : { source: "album", albumId, assets: allAssets },
+    );
   const handleOpenPhoto = useCallback(
     (id: string) => {
       router.push({
         pathname: "/theater/[assetId]",
         params: isFavorites
-          ? { assetId: id, kind: "favorites" }
-          : { assetId: id, kind: "album", albumId },
+          ? { assetId: id, kind: "favorites", autoplay: "0" }
+          : { assetId: id, kind: "album", albumId, autoplay: "0" },
       });
     },
     [albumId, isFavorites],
@@ -122,6 +130,7 @@ export default function AlbumGalleryScreen() {
         scope={{ kind: "album", title: albumTitle }}
         onFavoriteAll={handleFavoriteAll}
         onDeleteAll={handleDeleteAll}
+        onShuffle={handleShuffle}
       />
     </View>
   );

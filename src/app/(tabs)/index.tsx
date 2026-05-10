@@ -4,6 +4,7 @@ import { StyleSheet, View } from "react-native";
 import { useBulkDelete } from "@/actions/use-bulk-delete";
 import { useBulkFavorite } from "@/actions/use-bulk-favorite";
 import { useReshuffleGallery } from "@/actions/use-reshuffle-gallery";
+import { useStartSlideshow } from "@/actions/use-start-slideshow";
 import { EmptyState } from "@/components/empty-state";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { MorphingPill } from "@/components/morphing-pill";
@@ -40,6 +41,7 @@ export default function GalleryScreen() {
   const reshuffle = useReshuffleGallery();
   const bulkFavorite = useBulkFavorite();
   const bulkDelete = useBulkDelete();
+  const startSlideshow = useStartSlideshow();
   const selectedIds = useSelectionStore((s) => s.selectedIds);
   const cancelSelection = useSelectionStore((s) => s.cancel);
 
@@ -77,10 +79,12 @@ export default function GalleryScreen() {
 
   const handleFavoriteAll = () => bulkFavorite([...selectedIds]);
   const handleDeleteAll = () => bulkDelete([...selectedIds]);
+  const handleShuffle = () =>
+    startSlideshow({ source: "all", assets: allAssets });
   const handleOpenPhoto = useCallback((id: string) => {
     router.push({
       pathname: "/theater/[assetId]",
-      params: { assetId: id, kind: "all" },
+      params: { assetId: id, kind: "all", autoplay: "0" },
     });
   }, []);
 
@@ -108,6 +112,7 @@ export default function GalleryScreen() {
         scope={{ kind: "all" }}
         onFavoriteAll={handleFavoriteAll}
         onDeleteAll={handleDeleteAll}
+        onShuffle={handleShuffle}
       />
     </View>
   );
