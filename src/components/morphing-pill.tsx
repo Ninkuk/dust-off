@@ -10,10 +10,10 @@ import {
 } from "@/hooks/use-pill-context-label";
 import { type PillState, usePillState } from "@/hooks/use-pill-state";
 import { selectionTick } from "@/lib/haptics";
-import { strings } from "@/lib/strings";
 import { type Toast, useToastStore } from "@/state/toast-store";
 import { tabularNums, type, useTheme } from "@/theme";
 import { ActionsSheet } from "./actions-sheet";
+import { ToastPill } from "./toast-pill";
 
 // NativeTabs doesn't expose a tab-bar height to JS, so we approximate. The
 // pill clears typical iOS (~49pt + home indicator) and Android (~56dp + nav)
@@ -34,7 +34,6 @@ export function MorphingPill({
   const state = usePillState();
   const label = usePillContextLabel(scope);
   const toast = useToastStore((s) => s.current);
-  const undo = useToastStore((s) => s.undo);
   const sheetRef = useRef<BottomSheetModal>(null);
 
   if (state === "hidden") return null;
@@ -52,11 +51,6 @@ export function MorphingPill({
   const wrapDismiss = (action: () => void) => () => {
     sheetRef.current?.dismiss();
     action();
-  };
-
-  const handleUndo = () => {
-    selectionTick();
-    undo();
   };
 
   return (
@@ -80,7 +74,6 @@ export function MorphingPill({
             toast,
             onShuffle: handleShufflePress,
             onActions: handleActionsPress,
-            onUndo: handleUndo,
           })}
         </BlurView>
       </View>
@@ -101,7 +94,6 @@ function renderContent({
   toast,
   onShuffle,
   onActions,
-  onUndo,
 }: {
   state: PillState;
   label: string;
@@ -109,7 +101,6 @@ function renderContent({
   toast: Toast | null;
   onShuffle: () => void;
   onActions: () => void;
-  onUndo: () => void;
 }): ReactNode {
   switch (state) {
     case "shuffle":
@@ -156,47 +147,10 @@ function renderContent({
       );
     case "toast":
       if (!toast) return null;
-      return <ToastContent toast={toast} theme={theme} onUndo={onUndo} />;
+      return <ToastPill toast={toast} chrome="bare" />;
     case "hidden":
       return null;
   }
-}
-
-function ToastContent({
-  toast,
-  theme,
-  onUndo,
-}: {
-  toast: Toast;
-  theme: ReturnType<typeof useTheme>;
-  onUndo: () => void;
-}) {
-  const message =
-    toast.kind === "flash" ? toast.message : strings.toast.saved;
-  const showUndo = toast.kind !== "flash";
-
-  return (
-    <View style={styles.row}>
-      <Text style={[type.body, { color: theme.textPrimary }]}>{message}</Text>
-      {showUndo ? (
-        <>
-          <Text style={[type.body, styles.dot, { color: theme.textPrimary }]}>
-            {" · "}
-          </Text>
-          <Pressable
-            onPress={onUndo}
-            accessibilityRole="button"
-            accessibilityLabel={strings.toast.undo}
-            hitSlop={8}
-          >
-            <Text style={[type.body, { color: theme.accent }]}>
-              {strings.toast.undo}
-            </Text>
-          </Pressable>
-        </>
-      ) : null}
-    </View>
-  );
 }
 
 const styles = StyleSheet.create({
@@ -220,8 +174,5 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 8,
-  },
-  dot: {
-    opacity: 0.6,
   },
 });
