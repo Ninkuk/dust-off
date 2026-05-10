@@ -579,6 +579,8 @@ src/
 
 ### Phase 4 — Selection mode & bulk actions
 
+**Status: Implementation landed 2026-05-09.** Static checks clean (`npm run lint`, `npx tsc --noEmit`, iOS bundle export). On-device walkthrough is pending. Scope locked during planning: pull-to-shuffle uses standard `RefreshControl` semantics (DS-31's jumble-during-pull deferred as polish); actions sheet shows `Favorite all` + `Delete all` only (`Slideshow these N` lands in Phase 7 with `useStartSlideshowFromSelection`); bulk-delete app-level `Alert.alert` runs on Android only (iOS relies on the `deleteAssetsAsync` system dialog, accepting SM-13's restore-flicker on cancel as the sole failure mode); the morphing pill's Shuffle-state tap is a no-op until Phase 6 wires it to `startSlideshow`. The previously-deferred SM-6 library-change subscription also landed here alongside bulk-delete invalidation.
+
 **Goal:** Multi-select curation flow with cap, bulk actions, and pull-to-shuffle.
 
 **Builds on:** Phase 3.
