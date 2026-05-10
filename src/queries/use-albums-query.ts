@@ -10,3 +10,9 @@ export function useAlbumsQuery(options?: { enabled?: boolean }) {
     staleTime: Infinity,
   });
 }
+
+export function useAlbumTitle(albumId: string | undefined): string | undefined {
+  const albumsQuery = useAlbumsQuery();
+  if (!albumId) return undefined;
+  return albumsQuery.data?.find((a) => a.id === albumId)?.title;
+}
