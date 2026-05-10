@@ -1,6 +1,6 @@
 import { Image } from "expo-image";
 import type { Asset } from "expo-media-library";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, useWindowDimensions } from "react-native";
 import {
   Gesture,
@@ -11,8 +11,12 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
+import { usePreferencesStore } from "@/state/preferences-store";
 import { theaterMotion } from "@/theme";
+
+const CROSS_FADE_MS = 400;
 
 const HORIZ_COMMIT_RATIO = 0.25;
 const HORIZ_COMMIT_VELOCITY = 800;
@@ -35,6 +39,8 @@ export function TheaterViewer({
   onLongPressCommit,
   onLongPressCancel,
   onDoubleTap,
+  onImageError,
+  onPinchStart,
 }: {
   asset: Asset;
   onPrev: () => void;
@@ -46,6 +52,8 @@ export function TheaterViewer({
   onLongPressCommit: () => void;
   onLongPressCancel: () => void;
   onDoubleTap: () => void;
+  onImageError?: () => void;
+  onPinchStart?: () => void;
 }) {
   const { width } = useWindowDimensions();
 
@@ -65,6 +73,18 @@ export function TheaterViewer({
 
   // Drives <LongPressRing>
   const direction = useSharedValue<"none" | "horiz" | "vert">("none");
+
+  const pinchHasFired = useSharedValue(false);
+
+  // Two-layer cross-fade. The "front" layer holds the currently-visible asset;
+  // the "back" layer is repainted with the incoming asset on `asset.id` change
+  // and faded in. After the fade completes, frontIsA flips so the next
+  // transition reuses the just-vacated layer.
+  const [slotA, setSlotA] = useState<Asset>(asset);
+  const [slotB, setSlotB] = useState<Asset | null>(null);
+  const [frontIsA, setFrontIsA] = useState(true);
+  const opacityA = useSharedValue(1);
+  const opacityB = useSharedValue(0);
 
   // Reset transient values when the asset swaps so the new image starts clean.
   // Reanimated shared values are stable refs; listing them keeps the linter
@@ -90,15 +110,51 @@ export function TheaterViewer({
     dismissY,
   ]);
 
+  // Cross-fade transition driver. Watches asset.id and animates the layer
+  // swap. Reads slideTransition imperatively (not subscribed) so a settings
+  // change mid-session doesn't retrigger transitions; the next asset change
+  // will pick up the new value.
+  useEffect(() => {
+    const front = frontIsA ? slotA : slotB;
+    if (front?.id === asset.id) return; // already showing it
+    const transition = usePreferencesStore.getState().slideTransition;
+    const duration = transition === "cross-fade" ? CROSS_FADE_MS : 0;
+    if (frontIsA) {
+      setSlotB(asset);
+      opacityA.value = withTiming(0, { duration });
+      opacityB.value = withTiming(1, { duration }, (done) => {
+        if (done) runOnJS(setFrontIsA)(false);
+      });
+    } else {
+      setSlotA(asset);
+      opacityB.value = withTiming(0, { duration });
+      opacityA.value = withTiming(1, { duration }, (done) => {
+        if (done) runOnJS(setFrontIsA)(true);
+      });
+    }
+    // frontIsA / slotA / slotB are read inside the effect but the trigger is
+    // asset.id — including them would re-run on every layer swap.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asset.id]);
+
   const pinch = Gesture.Pinch()
     .onStart(() => {
       savedScale.value = scale.value;
+      pinchHasFired.value = false;
     })
     .onUpdate((e) => {
       scale.value = Math.min(
         SCALE_MAX,
         Math.max(SCALE_MIN, savedScale.value * e.scale),
       );
+      if (
+        scale.value > ZOOM_THRESHOLD &&
+        !pinchHasFired.value &&
+        onPinchStart
+      ) {
+        pinchHasFired.value = true;
+        runOnJS(onPinchStart)();
+      }
     })
     .onEnd(() => {
       if (scale.value <= ZOOM_THRESHOLD) {
@@ -235,17 +291,52 @@ export function TheaterViewer({
     opacity: dismissY.value > 0 ? Math.max(0.5, 1 - dismissY.value / 600) : 1,
   }));
 
+  const styleA = useAnimatedStyle(() => ({ opacity: opacityA.value }));
+  const styleB = useAnimatedStyle(() => ({ opacity: opacityB.value }));
+
+  // The currently-visible asset is whichever layer is in front. Used as the
+  // event sink for onError so a render failure on the *displayed* photo
+  // triggers the skip — back-layer prefetch errors are ignored (they self-
+  // correct on the next transition).
+  const visibleAssetId = (frontIsA ? slotA : slotB)?.id;
+
   return (
     <GestureDetector gesture={composed}>
       <Animated.View style={[styles.surface, animatedStyle]}>
-        <Image
-          source={{ uri: asset.uri }}
-          style={styles.image}
-          contentFit="contain"
-          recyclingKey={asset.id}
-          cachePolicy="memory-disk"
-          transition={0}
-        />
+        <Animated.View
+          style={[styles.layer, styleA]}
+          pointerEvents="none"
+        >
+          <Image
+            source={{ uri: slotA.uri }}
+            style={styles.image}
+            contentFit="contain"
+            recyclingKey={slotA.id}
+            cachePolicy="memory-disk"
+            transition={0}
+            onError={
+              visibleAssetId === slotA.id ? onImageError : undefined
+            }
+          />
+        </Animated.View>
+        {slotB ? (
+          <Animated.View
+            style={[styles.layer, styleB]}
+            pointerEvents="none"
+          >
+            <Image
+              source={{ uri: slotB.uri }}
+              style={styles.image}
+              contentFit="contain"
+              recyclingKey={slotB.id}
+              cachePolicy="memory-disk"
+              transition={0}
+              onError={
+                visibleAssetId === slotB.id ? onImageError : undefined
+              }
+            />
+          </Animated.View>
+        ) : null}
       </Animated.View>
     </GestureDetector>
   );
@@ -254,6 +345,9 @@ export function TheaterViewer({
 const styles = StyleSheet.create({
   surface: {
     flex: 1,
+  },
+  layer: {
+    ...StyleSheet.absoluteFillObject,
   },
   image: {
     flex: 1,
