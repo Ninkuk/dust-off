@@ -7,18 +7,18 @@ import { SortStrip } from "@/components/sort-strip";
 import { useFirstReveal } from "@/hooks/use-first-reveal";
 import { isPermissionLimited } from "@/lib/permission";
 import { seededShuffle } from "@/lib/seeded-shuffle";
-import type { SourceSet } from "@/lib/source-set";
 import { strings } from "@/lib/strings";
 import {
   useAssetsQuery,
   usePrefetchAllAssetPages,
+  type AlbumOrAllSource,
 } from "@/queries/use-assets-query";
 import { usePermissionQuery } from "@/queries/use-permission-query";
 import { useGalleryStore } from "@/state/gallery-store";
 import { usePreferencesStore } from "@/state/preferences-store";
 import { useTheme } from "@/theme";
 
-const SOURCE: SourceSet = { kind: "all" };
+const SOURCE: AlbumOrAllSource = { kind: "all" };
 
 export default function GalleryScreen() {
   const theme = useTheme();
