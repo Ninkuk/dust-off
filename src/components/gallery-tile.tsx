@@ -25,11 +25,13 @@ export function GalleryTile({
   index,
   numColumns,
   revealProgress,
+  onOpen,
 }: {
   asset: Asset;
   index: number;
   numColumns: number;
   revealProgress: SharedValue<number>;
+  onOpen?: (id: string) => void;
 }) {
   const theme = useTheme();
   const selected = useSelectionStore((s) => s.selectedIds.has(asset.id));
@@ -49,15 +51,19 @@ export function GalleryTile({
     ),
   }));
 
-  const handlePress = selectionActive
-    ? () => {
+  const handlePress = (() => {
+    if (selectionActive) {
+      return () => {
         if (useSelectionStore.getState().toggle(asset.id)) return;
         useToastStore.getState().show({
           kind: "flash",
           message: strings.selection.capToast,
         });
-      }
-    : undefined;
+      };
+    }
+    if (onOpen) return () => onOpen(asset.id);
+    return undefined;
+  })();
 
   return (
     <Animated.View style={[styles.cell, animatedStyle]}>

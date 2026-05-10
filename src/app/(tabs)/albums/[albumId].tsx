@@ -1,5 +1,5 @@
-import { useLocalSearchParams } from "expo-router";
-import { useMemo } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useCallback, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 import { useBulkDelete } from "@/actions/use-bulk-delete";
 import { useBulkFavorite } from "@/actions/use-bulk-favorite";
@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/empty-state";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { MorphingPill } from "@/components/morphing-pill";
 import { SortStrip } from "@/components/sort-strip";
+import { firstParam } from "@/lib/route-params";
 import { seededShuffle } from "@/lib/seeded-shuffle";
 import { FAVORITES_ALBUM_ID } from "@/lib/source-set";
 import { strings } from "@/lib/strings";
@@ -17,7 +18,7 @@ import {
   useFavoritesAssetsQuery,
   usePrefetchAllAssetPages,
 } from "@/queries/use-assets-query";
-import { useAlbumsQuery } from "@/queries/use-albums-query";
+import { useAlbumTitle } from "@/queries/use-albums-query";
 import { useGalleryStore } from "@/state/gallery-store";
 import { usePreferencesStore } from "@/state/preferences-store";
 import { useSelectionStore } from "@/state/selection-store";
@@ -26,9 +27,7 @@ import { useTheme } from "@/theme";
 export default function AlbumGalleryScreen() {
   const theme = useTheme();
   const params = useLocalSearchParams<{ albumId: string }>();
-  const albumId = Array.isArray(params.albumId)
-    ? params.albumId[0]
-    : params.albumId;
+  const albumId = firstParam(params.albumId) ?? "";
 
   const sortMode = usePreferencesStore((s) => s.defaultSort);
   const seed = useGalleryStore((s) => s.seed);
@@ -42,7 +41,7 @@ export default function AlbumGalleryScreen() {
   usePrefetchAllAssetPages(querySource, { enabled: !isFavorites });
   const albumQuery = useAssetsQuery(querySource, { enabled: !isFavorites });
   const favoritesQuery = useFavoritesAssetsQuery({ enabled: isFavorites });
-  const albumsQuery = useAlbumsQuery();
+  const lookedUpTitle = useAlbumTitle(isFavorites ? undefined : albumId);
 
   const reshuffle = useReshuffleGallery();
   const bulkFavorite = useBulkFavorite();
@@ -86,10 +85,21 @@ export default function AlbumGalleryScreen() {
 
   const albumTitle = isFavorites
     ? strings.albums.favoritesTitle
-    : (albumsQuery.data?.find((a) => a.id === albumId)?.title ?? "");
+    : (lookedUpTitle ?? "");
 
   const handleFavoriteAll = () => bulkFavorite([...selectedIds]);
   const handleDeleteAll = () => bulkDelete([...selectedIds]);
+  const handleOpenPhoto = useCallback(
+    (id: string) => {
+      router.push({
+        pathname: "/theater/[assetId]",
+        params: isFavorites
+          ? { assetId: id, kind: "favorites" }
+          : { assetId: id, kind: "album", albumId },
+      });
+    },
+    [albumId, isFavorites],
+  );
 
   return (
     <View style={[styles.root, { backgroundColor: theme.surface }]}>
@@ -105,6 +115,7 @@ export default function AlbumGalleryScreen() {
           assets={sortedAssets}
           isFirstReveal={false}
           onPullToShuffle={reshuffle}
+          onOpenPhoto={handleOpenPhoto}
         />
       )}
       <MorphingPill

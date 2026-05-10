@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from "react";
+import { router } from "expo-router";
+import { useCallback, useEffect, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 import { useBulkDelete } from "@/actions/use-bulk-delete";
 import { useBulkFavorite } from "@/actions/use-bulk-favorite";
@@ -76,6 +77,12 @@ export default function GalleryScreen() {
 
   const handleFavoriteAll = () => bulkFavorite([...selectedIds]);
   const handleDeleteAll = () => bulkDelete([...selectedIds]);
+  const handleOpenPhoto = useCallback((id: string) => {
+    router.push({
+      pathname: "/theater/[assetId]",
+      params: { assetId: id, kind: "all" },
+    });
+  }, []);
 
   return (
     <View style={[styles.root, { backgroundColor: theme.surface }]}>
@@ -94,6 +101,7 @@ export default function GalleryScreen() {
           assets={sortedAssets}
           isFirstReveal={isFirstReveal}
           onPullToShuffle={reshuffle}
+          onOpenPhoto={handleOpenPhoto}
         />
       )}
       <MorphingPill

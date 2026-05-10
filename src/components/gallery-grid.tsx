@@ -23,10 +23,12 @@ export function GalleryGrid({
   assets,
   isFirstReveal,
   onPullToShuffle,
+  onOpenPhoto,
 }: {
   assets: Asset[];
   isFirstReveal: boolean;
   onPullToShuffle?: (anchorIds: string[]) => void;
+  onOpenPhoto?: (id: string) => void;
 }) {
   const numColumns = useGridColumns();
   const { width } = useWindowDimensions();
@@ -148,6 +150,7 @@ export function GalleryGrid({
             index={index}
             numColumns={numColumns}
             revealProgress={revealProgress}
+            onOpen={onOpenPhoto}
           />
         )}
       />
