@@ -1,3 +1,4 @@
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -15,9 +16,11 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <PermissionAppStateBridge />
         <SafeAreaProvider>
-          <SplashGate>
-            <Stack screenOptions={{ headerShown: false, animation: "fade" }} />
-          </SplashGate>
+          <BottomSheetModalProvider>
+            <SplashGate>
+              <Stack screenOptions={{ headerShown: false, animation: "fade" }} />
+            </SplashGate>
+          </BottomSheetModalProvider>
         </SafeAreaProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>

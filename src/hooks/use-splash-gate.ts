@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { isPermissionCleared } from "@/lib/permission";
-import { queryClient } from "@/lib/query-client";
-import { sourceSetKey } from "@/lib/source-set";
+import { useAssetsQuery } from "@/queries/use-assets-query";
 import { usePermissionQuery } from "@/queries/use-permission-query";
 import { useFavoritesStore } from "@/state/favorites-store";
 import { usePreferencesStore } from "@/state/preferences-store";
@@ -43,27 +42,23 @@ export function useSplashGate(): { ready: boolean } {
   const permissionSettled = !permissionQuery.isLoading;
   const cleared = isPermissionCleared(permissionQuery.data);
 
+  const assetsQuery = useAssetsQuery({ kind: "all" }, { enabled: cleared });
+  const firstPageReady = assetsQuery.data?.pages?.[0] != null;
+
   const [backstopElapsed, setBackstopElapsed] = useState(false);
   useEffect(() => {
-    if (!hydrated || !hasSeenOnboarding || !permissionSettled || !cleared) return;
+    if (!hydrated || !hasSeenOnboarding || !permissionSettled || !cleared)
+      return;
     const timer = setTimeout(() => setBackstopElapsed(true), GALLERY_BACKSTOP_MS);
     return () => clearTimeout(timer);
   }, [hydrated, hasSeenOnboarding, permissionSettled, cleared]);
-
-  useEffect(() => {
-    if (cleared) {
-      queryClient.prefetchQuery({
-        queryKey: ["assets", sourceSetKey({ kind: "all" })],
-      });
-    }
-  }, [cleared]);
 
   const ready = (() => {
     if (!hydrated) return false;
     if (!hasSeenOnboarding) return true;
     if (!permissionSettled) return false;
     if (!cleared) return true;
-    return backstopElapsed;
+    return firstPageReady || backstopElapsed;
   })();
 
   return { ready };
