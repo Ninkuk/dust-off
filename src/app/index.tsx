@@ -1,4 +1,3 @@
-import { Link } from "expo-router";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useFrameRate } from "@/hooks/use-frame-rate";
@@ -71,10 +70,6 @@ function Screen({
       >
         {String(fps).padStart(2, "0")} fps · {theme.zone}
       </Text>
-
-      <Link href="/spike-galeria" style={[styles.devLink, { color: theme.textPrimary }]}>
-        D-1 spike →
-      </Link>
     </View>
   );
 }
@@ -96,12 +91,5 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 64,
     opacity: 0.5,
-  },
-  devLink: {
-    position: "absolute",
-    bottom: 24,
-    fontSize: 11,
-    opacity: 0.4,
-    textDecorationLine: "underline",
   },
 });
