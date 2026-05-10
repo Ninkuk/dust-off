@@ -15,8 +15,8 @@ This is a hobby project, not a launch. The product spec — including locked des
 - React Native 0.83 on the New Architecture (Fabric + TurboModules)
 - TypeScript strict mode
 - State: TanStack Query (server-ish) + Zustand `persist` (preferences, favorites) + plain Zustand (transient)
-- Lists: `@shopify/flash-list`; Images: `expo-image`; Slideshow lightbox: `@nandorojo/galeria`
-- Animations: `react-native-reanimated` 4.x + `react-native-gesture-handler`
+- Lists: `@shopify/flash-list`; Images: `expo-image`
+- Animations + gestures: `react-native-reanimated` 4.x + `react-native-gesture-handler` 2.30 (powers the custom theater viewer's tap-zones, pinch-pan, swipe-down dismiss, long-press menu)
 
 ## Get started
 
@@ -45,7 +45,7 @@ Adding a dependency that violates any of these requires replacing or wrapping it
 
 ## Build status
 
-Phase 1 (permission + onboarding flow) is complete. Phase 2 (gallery walking skeleton — paginated MediaLibrary fetch, FlashList grid, sort sheet, persisted preferences, first-reveal stagger) and Phase 3 (Albums view + favorites — Albums route folder with drill-in, synthesized Favorites pinned first, per-session random covers) implementations are landed; on-device walkthroughs pending. Phase progression and exit gates live in [`docs/PRD.md`](docs/PRD.md); `CLAUDE.md` carries the running architectural picture.
+Phase 1 (permission + onboarding flow) is complete. Phases 2 (gallery walking skeleton — paginated MediaLibrary fetch, FlashList grid, sort sheet, persisted preferences, first-reveal stagger), 3 (Albums view + favorites — drill-in, synthesized Favorites pinned first, per-session random covers), 4 (selection mode + bulk actions — long-press drag-extend, morphing pill, bulk favorite/delete, pull-to-shuffle), and 5 (photo viewer "theater" — paused state with tap-zones, pinch+pan, swipe-down dismiss, double-tap favorite, long-press menu, EXIF info sheet) are landed; on-device walkthroughs pending. Phase 5 flipped from `@nandorojo/galeria` to a custom Reanimated swiper after DS-12 reconciliation found the lightbox model incompatible with the bespoke gesture set. Phase progression and exit gates live in [`docs/PRD.md`](docs/PRD.md); `CLAUDE.md` carries the running architectural picture.
 
 ## Repository map
 
