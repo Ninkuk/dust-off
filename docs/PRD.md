@@ -532,18 +532,20 @@ src/
 
 ### Phase 2 — Gallery walking skeleton
 
+**Status: Implementation landed 2026-05-09.** Static checks clean (`npm run lint`, `npx tsc --noEmit`, iOS bundle export). On-device walkthrough and the perf targets in the exit gate below are pending per the project owner's perf-deferral standing instruction. See `git log --grep='Phase 2'` for the commit boundary once committed.
+
 **Goal:** Real photos rendering at target performance, with sort and grid controls persisting.
 
 **Builds on:** Phase 1.
 
 **Deliverables:**
 
-- All-IDs shuffle implementation (SM-2): paginated `getAssetsAsync` ID fetch + in-memory shuffled `string[]` + ID-slice metadata pagination
+- All-IDs shuffle implementation (SM-2): `useInfiniteQuery` paginating `getAssetsAsync` (5000 assets/page) plus a sibling `usePrefetchAllAssetPages` hook driving auto-fetch via `useEffect`. Sort and shuffle are `useMemo` derivations against the flattened cache — sort changes never refetch. `getAssetsAsync` already returns full per-asset metadata, so the SM-2 projected ID-then-metadata two-phase shape collapses to a single paginated read; the G-11 invariant (first screenful before full pagination) holds because the first page resolves and renders while remaining pages stream in. Sort/shuffle gated on `!hasNextPage` so already-painted tile positions don't shift on each new page during the cold-start paging loop.
 - FlashList grid with 1px gutters (DS-11), three grid sizes (G-12)
 - Top safe-area strip with combined sort+count string (DS-32)
 - Sort sheet: newest / oldest / name / random (G-3, "size" cut per D-12)
 - Sort + grid size persisted to `usePreferencesStore` (G-4)
-- First-reveal row-by-row stagger (DS-24), gated by `hasSeenFirstReveal`
+- First-reveal row-by-row stagger (DS-24), gated by `hasSeenFirstReveal`. Single shared Reanimated `revealProgress` value drives per-tile `useAnimatedStyle` interpolation (no per-tile clocks); flag flips on mount-with-data so navigation away mid-stagger doesn't replay it next time.
 
 **Exit gate:**
 

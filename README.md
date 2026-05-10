@@ -43,15 +43,20 @@ Privacy is architectural, not optional. Per PRD requirements P-1 through P-5:
 
 Adding a dependency that violates any of these requires replacing or wrapping it.
 
+## Build status
+
+Phase 1 (permission + onboarding flow) is complete. Phase 2 (gallery walking skeleton — paginated MediaLibrary fetch, FlashList grid, sort sheet, persisted preferences, first-reveal stagger) implementation is landed; on-device walkthrough pending. Phase progression and exit gates live in [`docs/PRD.md`](docs/PRD.md); `CLAUDE.md` carries the running architectural picture.
+
 ## Repository map
 
 - `src/app/` — Expo Router routes (file-based, in a `src/`-prefixed layout)
 - `src/theme/` — design tokens (palette, motion, typography, theme provider)
-- `src/state/` — Zustand stores (preferences, favorites)
-- `src/queries/` — TanStack queries (assets, permission)
+- `src/state/` — Zustand stores (preferences + favorites are persisted; gallery seed is transient)
+- `src/queries/` — TanStack queries (assets via `useInfiniteQuery`, permission)
 - `src/actions/` — compound cross-store actions (e.g. `useOnboardingComplete`)
-- `src/components/` — UI primitives (Button, EmptyState, etc.)
-- `src/lib/` — adapters and helpers (async-storage, media-library wrapper, permission helper, strings)
+- `src/hooks/` — React hooks (splash gate, grid columns, first-reveal, app-state refetch)
+- `src/components/` — UI primitives (Button, EmptyState, GalleryGrid, SortStrip, Sheet, etc.)
+- `src/lib/` — adapters and helpers (async-storage, media-library wrapper, seeded-shuffle, permission, source-set, strings)
 - `docs/PRD.md` — product requirements + locked design and state decisions (source of truth)
 - `docs/perf-rig.md`, `docs/perf-baseline-phase0.md` — perf measurement infrastructure (rig in place, runs deferred)
 - `CLAUDE.md` — guidance for AI-assisted development on this codebase
