@@ -1,16 +1,10 @@
-import { useEffect } from "react";
-import { AppState, type AppStateStatus } from "react-native";
+import { useAppStateListener } from "@/hooks/use-app-state-listener";
 import { queryClient } from "@/lib/query-client";
 
 export function usePermissionAppStateRefetch() {
-  useEffect(() => {
-    let lastState: AppStateStatus = AppState.currentState;
-    const sub = AppState.addEventListener("change", (next) => {
-      if (lastState !== "active" && next === "active") {
-        queryClient.invalidateQueries({ queryKey: ["permission"] });
-      }
-      lastState = next;
-    });
-    return () => sub.remove();
-  }, []);
+  useAppStateListener((next, prev) => {
+    if (prev !== "active" && next === "active") {
+      queryClient.invalidateQueries({ queryKey: ["permission"] });
+    }
+  });
 }
