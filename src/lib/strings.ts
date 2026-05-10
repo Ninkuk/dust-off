@@ -41,4 +41,35 @@ export const strings = {
     tileA11y: (title: string, count: number) =>
       `${title}, ${count} photos`,
   },
+  selection: {
+    selectedLabel: (n: number) => `${n} selected`,
+    cancelA11y: "Cancel selection",
+    capToast: "Limit reached: 1,000 photos.",
+  },
+  pill: {
+    shuffleAll: "Shuffle All",
+    shuffleAlbum: (title: string) => `Shuffle ${title}`,
+    actions: (n: number) => `Actions · ${n}`,
+    shuffleA11y: "Shuffle",
+    actionsA11y: (n: number) => `Actions for ${n} selected`,
+  },
+  actionsSheet: {
+    favoriteAll: "Favorite all",
+    deleteAll: "Delete all",
+  },
+  toast: {
+    saved: "Saved.",
+    undo: "Undo",
+    gone: "Gone.",
+    reshuffled: "Reshuffled.",
+  },
+  deleteConfirm: {
+    titleSingle: "Delete photo?",
+    titleBulk: (n: number) => `Delete ${n} photos?`,
+    bodyIos: "This photo will be moved to your Recently Deleted album.",
+    bodyAndroidNew: "This photo will be moved to Trash.",
+    bodyAndroidOld: "This photo will be deleted from your library.",
+    delete: (n: number) => (n === 1 ? "Delete" : `Delete ${n}`),
+    cancel: "Cancel",
+  },
 } as const;

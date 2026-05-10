@@ -17,16 +17,41 @@ function hashString(s: string): number {
   return h | 0;
 }
 
-export function seededShuffle<T>(items: readonly T[], seed: number): T[] {
-  const out = items.slice();
-  const rand = mulberry32(seed);
-  for (let i = out.length - 1; i > 0; i--) {
+function fisherYatesInPlace<T>(arr: T[], rand: () => number): void {
+  for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
-    const tmp = out[i];
-    out[i] = out[j];
-    out[j] = tmp;
+    const tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
   }
-  return out;
+}
+
+export type ShuffleOptions<T> = {
+  anchorIds?: ReadonlySet<string>;
+  idOf?: (t: T) => string;
+};
+
+export function seededShuffle<T>(
+  items: readonly T[],
+  seed: number,
+  opts?: ShuffleOptions<T>,
+): T[] {
+  const rand = mulberry32(seed);
+  const anchorIds = opts?.anchorIds;
+  if (!anchorIds || anchorIds.size === 0) {
+    const out = items.slice();
+    fisherYatesInPlace(out, rand);
+    return out;
+  }
+  const idOf = opts?.idOf ?? ((t: T) => (t as { id: string }).id);
+  const anchored: T[] = [];
+  const rest: T[] = [];
+  for (const item of items) {
+    if (anchorIds.has(idOf(item))) anchored.push(item);
+    else rest.push(item);
+  }
+  fisherYatesInPlace(rest, rand);
+  return [...anchored, ...rest];
 }
 
 export function pickIndexFromSeed(

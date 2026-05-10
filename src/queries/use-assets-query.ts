@@ -11,9 +11,12 @@ export type AlbumOrAllSource =
   | { kind: "all" }
   | { kind: "album"; albumId: string };
 
+export const assetsQueryKey = (source: AlbumOrAllSource) =>
+  ["assets", sourceSetKey(source)] as const;
+
 function assetsInfiniteOptions(source: AlbumOrAllSource) {
   return {
-    queryKey: ["assets", sourceSetKey(source)] as const,
+    queryKey: assetsQueryKey(source),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last: PagedInfo<Asset>) =>
       last.hasNextPage ? last.endCursor : undefined,
