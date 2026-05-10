@@ -509,6 +509,8 @@ src/
 
 ### Phase 1 — Permission & onboarding flow
 
+**Status: Complete 2026-05-09.** Verified end-to-end on device against all six exit-gate scenarios. See `git log --grep='Phase 1'` for the commit boundary.
+
 **Goal:** Get from cold install to a granted (or gracefully denied) MediaLibrary permission.
 
 **Builds on:** Phase 0.
