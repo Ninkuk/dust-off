@@ -36,4 +36,9 @@ export const strings = {
     sortStripA11y: (label: string, count: number) =>
       `${label}, ${count} photos`,
   },
+  albums: {
+    favoritesTitle: "Favorites",
+    tileA11y: (title: string, count: number) =>
+      `${title}, ${count} photos`,
+  },
 } as const;
