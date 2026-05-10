@@ -5,7 +5,9 @@ import { zustandStorage } from "@/lib/async-storage";
 type FavoritesState = {
   favorites: Set<string>;
   addFavorite: (id: string) => void;
+  addFavorites: (ids: readonly string[]) => void;
   removeFavorite: (id: string) => void;
+  removeFavorites: (ids: readonly string[]) => void;
   toggleFavorite: (id: string) => void;
   hasFavorite: (id: string) => boolean;
   clearFavorites: () => void;
@@ -24,11 +26,27 @@ export const useFavoritesStore = create<FavoritesState>()(
         next.add(id);
         set({ favorites: next });
       },
+      addFavorites: (ids) => {
+        const current = get().favorites;
+        const toAdd = ids.filter((id) => !current.has(id));
+        if (toAdd.length === 0) return;
+        const next = new Set(current);
+        for (const id of toAdd) next.add(id);
+        set({ favorites: next });
+      },
       removeFavorite: (id) => {
         const current = get().favorites;
         if (!current.has(id)) return;
         const next = new Set(current);
         next.delete(id);
+        set({ favorites: next });
+      },
+      removeFavorites: (ids) => {
+        const current = get().favorites;
+        const toRemove = ids.filter((id) => current.has(id));
+        if (toRemove.length === 0) return;
+        const next = new Set(current);
+        for (const id of toRemove) next.delete(id);
         set({ favorites: next });
       },
       toggleFavorite: (id) => {
