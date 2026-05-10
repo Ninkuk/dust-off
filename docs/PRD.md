@@ -556,6 +556,8 @@ src/
 
 ### Phase 3 — Albums view & favorites
 
+**Status: Implementation landed 2026-05-09.** Static checks clean (`npm run lint`, `npx tsc --noEmit`, iOS bundle export). On-device walkthrough is pending. Scope was extended (with user approval during planning) beyond the deliverables below to include drill-in: tapping any tile pushes a per-album gallery view that reuses Phase 2's `<GalleryGrid>` against `SourceSet { kind: "album", albumId }` (or `{ kind: "favorites" }` for the synthesized Favorites tile). See `git log --grep='Phase 3'` for the commit boundary once committed.
+
 **Goal:** Albums tab and Favorites as a first-class source.
 
 **Builds on:** Phase 2.

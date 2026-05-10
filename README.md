@@ -45,7 +45,7 @@ Adding a dependency that violates any of these requires replacing or wrapping it
 
 ## Build status
 
-Phase 1 (permission + onboarding flow) is complete. Phase 2 (gallery walking skeleton — paginated MediaLibrary fetch, FlashList grid, sort sheet, persisted preferences, first-reveal stagger) implementation is landed; on-device walkthrough pending. Phase progression and exit gates live in [`docs/PRD.md`](docs/PRD.md); `CLAUDE.md` carries the running architectural picture.
+Phase 1 (permission + onboarding flow) is complete. Phase 2 (gallery walking skeleton — paginated MediaLibrary fetch, FlashList grid, sort sheet, persisted preferences, first-reveal stagger) and Phase 3 (Albums view + favorites — Albums route folder with drill-in, synthesized Favorites pinned first, per-session random covers) implementations are landed; on-device walkthroughs pending. Phase progression and exit gates live in [`docs/PRD.md`](docs/PRD.md); `CLAUDE.md` carries the running architectural picture.
 
 ## Repository map
 
