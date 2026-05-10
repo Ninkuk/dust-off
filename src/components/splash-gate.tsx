@@ -3,13 +3,13 @@ import * as SplashScreen from "expo-splash-screen";
 import { useSplashGate } from "@/hooks/use-splash-gate";
 
 export function SplashGate({ children }: { children: ReactNode }) {
-  const { hydrated } = useSplashGate();
+  const { ready } = useSplashGate();
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!ready) return;
     SplashScreen.hideAsync().catch(() => {});
-  }, [hydrated]);
+  }, [ready]);
 
-  if (!hydrated) return null;
+  if (!ready) return null;
   return <>{children}</>;
 }

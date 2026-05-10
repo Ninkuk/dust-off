@@ -1,20 +1,12 @@
 import { useEffect, useState } from "react";
-import type { PermissionStatus } from "expo-media-library";
+import { isPermissionCleared } from "@/lib/permission";
 import { queryClient } from "@/lib/query-client";
 import { sourceSetKey } from "@/lib/source-set";
 import { usePermissionQuery } from "@/queries/use-permission-query";
 import { useFavoritesStore } from "@/state/favorites-store";
 import { usePreferencesStore } from "@/state/preferences-store";
 
-export type SplashBranch = "phase0-hello" | "onboarding" | "denied" | "gallery";
-
-export type SplashGateState = {
-  branch: SplashBranch;
-  hydrated: boolean;
-  permission: PermissionStatus;
-  hasSeenOnboarding: boolean;
-  galleryReady: boolean;
-};
+const GALLERY_BACKSTOP_MS = 1000;
 
 function useStoreHydration(): boolean {
   const [hydrated, setHydrated] = useState(
@@ -44,26 +36,35 @@ function useStoreHydration(): boolean {
   return hydrated;
 }
 
-export function useSplashGate(): SplashGateState {
+export function useSplashGate(): { ready: boolean } {
   const hydrated = useStoreHydration();
   const hasSeenOnboarding = usePreferencesStore((s) => s.hasSeenOnboarding);
-  const { data: permission = "undetermined" as PermissionStatus } =
-    usePermissionQuery();
-  const galleryReady = false;
+  const permissionQuery = usePermissionQuery();
+  const permissionSettled = !permissionQuery.isLoading;
+  const cleared = isPermissionCleared(permissionQuery.data);
+
+  const [backstopElapsed, setBackstopElapsed] = useState(false);
+  useEffect(() => {
+    if (!hydrated || !hasSeenOnboarding || !permissionSettled || !cleared) return;
+    const timer = setTimeout(() => setBackstopElapsed(true), GALLERY_BACKSTOP_MS);
+    return () => clearTimeout(timer);
+  }, [hydrated, hasSeenOnboarding, permissionSettled, cleared]);
 
   useEffect(() => {
-    if (permission === "granted") {
+    if (cleared) {
       queryClient.prefetchQuery({
         queryKey: ["assets", sourceSetKey({ kind: "all" })],
       });
     }
-  }, [permission]);
+  }, [cleared]);
 
-  return {
-    branch: "phase0-hello",
-    hydrated,
-    permission,
-    hasSeenOnboarding,
-    galleryReady,
-  };
+  const ready = (() => {
+    if (!hydrated) return false;
+    if (!hasSeenOnboarding) return true;
+    if (!permissionSettled) return false;
+    if (!cleared) return true;
+    return backstopElapsed;
+  })();
+
+  return { ready };
 }
