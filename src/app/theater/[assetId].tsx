@@ -21,6 +21,7 @@ import { TheaterToast } from "@/components/theater-toast";
 import { TheaterViewer } from "@/components/theater-viewer";
 import { useAppStatePause } from "@/hooks/use-app-state-pause";
 import { useKeepAwakeWhilePlaying } from "@/hooks/use-keep-awake-while-playing";
+import { useShakeToShuffle } from "@/hooks/use-shake-to-shuffle";
 import { firstParam } from "@/lib/route-params";
 import { seededShuffle } from "@/lib/seeded-shuffle";
 import {
@@ -199,9 +200,11 @@ export default function TheaterScreen() {
   const unfavoritePhoto = useUnfavoritePhoto();
   const deletePhoto = useDeletePhoto();
 
-  // Coordinator hooks: keep-awake while playing + AppState-pause on background.
+  // Coordinator hooks: keep-awake while playing + AppState-pause on background
+  // + shake-to-shuffle (S-13).
   useKeepAwakeWhilePlaying();
   useAppStatePause();
+  useShakeToShuffle();
 
   const chromeRef = useRef<TheaterChromeHandle>(null);
   const menuRef = useRef<BottomSheetModal>(null);

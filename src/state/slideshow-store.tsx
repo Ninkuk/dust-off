@@ -36,6 +36,10 @@ export type SlideshowActions = {
   // Removal (rather than just-advance) prevents a post-exhaustion reshuffle
   // from re-emitting the missing ID — that would loop forever.
   skipUnavailable: (id: string) => void;
+  // Re-orders the queue with a fresh seed and resets to index 0. Works
+  // whether playing or paused; never auto-resumes (D-9). Caller owns the
+  // haptic. Powers shake-to-shuffle (S-13).
+  reshuffle: () => void;
 };
 
 export type SlideshowStore = SlideshowState & SlideshowActions;
@@ -140,6 +144,19 @@ function createSlideshowStore(): StoreApi<SlideshowStore> {
         if (queue.length === 0 || index <= 0) return;
         set({ index: index - 1, generation: get().generation + 1 });
         if (isPlaying && get().queue.length > 1) scheduleNext();
+      },
+
+      reshuffle: () => {
+        const { unshuffledIds, queue, isPlaying } = get();
+        if (unshuffledIds.length === 0 || queue.length === 0) return;
+        clearTimer();
+        const newQueue = reshuffleQueue();
+        set({
+          queue: newQueue,
+          index: 0,
+          generation: get().generation + 1,
+        });
+        if (isPlaying && newQueue.length > 1) scheduleNext();
       },
 
       skipUnavailable: (id) => {
