@@ -18,6 +18,7 @@ export const strings = {
   },
   emptyStates: {
     nothingYet: "Nothing yet.",
+    nothingToShuffle: "Nothing to shuffle.",
   },
   tabs: {
     gallery: "Gallery",
@@ -105,6 +106,10 @@ export const strings = {
       aperture: "Aperture",
       shutter: "Shutter",
       iso: "ISO",
+    },
+    empty: {
+      adjust: "Adjust sources",
+      useAllPhotos: "Use All Photos",
     },
   },
 } as const;
