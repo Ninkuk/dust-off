@@ -15,12 +15,26 @@ export type SourceSet =
 
 export type PersistableSourceSet = Exclude<SourceSet, { kind: "ids" }>;
 
-// Theater can open from gallery/favorites/album — never from union/ids
-// (no UI surfaces those entry points yet).
-export type ViewerSourceKind = "all" | "favorites" | "album";
+// Theater entry kinds:
+//   all/favorites/album → existing query-backed sources
+//   union               → multi-source union from the source picker (DS-27)
+//   selection           → ad-hoc IDs from gallery selection mode (SM-13)
+// Both new kinds resolve via in-memory filter against the cached `'all'`
+// query — they don't fetch their own pages.
+export type ViewerSourceKind =
+  | "all"
+  | "favorites"
+  | "album"
+  | "union"
+  | "selection";
 
 export function parseViewerSourceKind(v: string | undefined): ViewerSourceKind {
-  return v === "favorites" || v === "album" ? v : "all";
+  return v === "favorites" ||
+    v === "album" ||
+    v === "union" ||
+    v === "selection"
+    ? v
+    : "all";
 }
 
 export type SourceSetKey =

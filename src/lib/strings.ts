@@ -76,6 +76,8 @@ export const strings = {
     sourceLabel: {
       all: "All",
       favorites: "Favorites",
+      mixed: "Mixed",
+      selection: "Selection",
     },
     formatPosition: (i: number, n: number) => `${i + 1} of ${n}`,
     closeA11y: "Close",

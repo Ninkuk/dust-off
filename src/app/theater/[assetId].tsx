@@ -35,10 +35,21 @@ import {
 } from "@/queries/use-assets-query";
 import { useFavoritesStore } from "@/state/favorites-store";
 import { useGalleryStore } from "@/state/gallery-store";
+import { useSlideshowInputStore } from "@/state/slideshow-input-store";
 import { useSlideshowStore } from "@/state/slideshow-store";
 
 const RING_DURATION_MS = 400;
 const RING_CANCEL_MS = 150;
+
+const SOURCE_LABEL_BY_KIND: Record<
+  Exclude<ViewerSourceKind, "album">,
+  string
+> = {
+  all: strings.theater.sourceLabel.all,
+  favorites: strings.theater.sourceLabel.favorites,
+  union: strings.theater.sourceLabel.mixed,
+  selection: strings.theater.sourceLabel.selection,
+};
 
 export default function TheaterScreen() {
   const params = useLocalSearchParams<{
@@ -52,10 +63,18 @@ export default function TheaterScreen() {
   const albumId = firstParam(params.albumId);
   const wantAutoplay = firstParam(params.autoplay) === "1";
 
-  // Rules of Hooks: queries called unconditionally; gated via `enabled`.
+  // Rules of Hooks: queries called unconditionally; gated via `enabled`. The
+  // 'all' query backs four kinds: 'all' itself, 'favorites' (derived filter),
+  // 'union' and 'selection' (both filter by an ID list from the bridge store).
   const allQuery = useAssetsQuery(
     { kind: "all" },
-    { enabled: kind === "all" || kind === "favorites" },
+    {
+      enabled:
+        kind === "all" ||
+        kind === "favorites" ||
+        kind === "union" ||
+        kind === "selection",
+    },
   );
   const albumQuery = useAssetsQuery(
     kind === "album" && albumId
@@ -67,12 +86,28 @@ export default function TheaterScreen() {
     enabled: kind === "favorites",
   });
 
+  // Bridge store consumed once via lazy useState init. The bridge holds the
+  // resolved ID list for kind=union (picker) or kind=selection (action), then
+  // self-clears so a remount can't re-consume stale data. Lazy init is
+  // load-bearing: a useEffect-based consumer would expose a frame where
+  // assets is empty, tripping the router.back() guard below.
+  const [bridgeIds] = useState<ReadonlySet<string> | null>(() => {
+    if (kind !== "union" && kind !== "selection") return null;
+    const ids = useSlideshowInputStore.getState().takeInput();
+    return new Set(ids ?? []);
+  });
+
   const assets: Asset[] = useMemo(() => {
     if (kind === "favorites") return favoritesQuery.data;
     if (kind === "album")
       return albumQuery.data?.pages.flatMap((p) => p.assets) ?? [];
-    return allQuery.data?.pages.flatMap((p) => p.assets) ?? [];
-  }, [kind, allQuery.data, albumQuery.data, favoritesQuery.data]);
+    const all = allQuery.data?.pages.flatMap((p) => p.assets) ?? [];
+    if (kind === "union" || kind === "selection") {
+      if (!bridgeIds || bridgeIds.size === 0) return [];
+      return all.filter((a) => bridgeIds.has(a.id));
+    }
+    return all;
+  }, [kind, allQuery.data, albumQuery.data, favoritesQuery.data, bridgeIds]);
 
   const indexById = useMemo(() => {
     const m = new Map<string, number>();
@@ -125,7 +160,10 @@ export default function TheaterScreen() {
   useEffect(() => {
     if (assets.length === 0) {
       const stillLoading =
-        (kind === "all" && allQuery.isLoading) ||
+        ((kind === "all" ||
+          kind === "union" ||
+          kind === "selection") &&
+          allQuery.isLoading) ||
         (kind === "album" && albumQuery.isLoading) ||
         (kind === "favorites" && favoritesQuery.isLoading);
       if (!stillLoading && queue.length === 0) router.back();
@@ -153,11 +191,9 @@ export default function TheaterScreen() {
 
   const albumTitle = useAlbumTitle(kind === "album" ? albumId : undefined);
   const sourceLabel =
-    kind === "all"
-      ? strings.theater.sourceLabel.all
-      : kind === "favorites"
-        ? strings.theater.sourceLabel.favorites
-        : (albumTitle ?? "");
+    kind === "album"
+      ? (albumTitle ?? "")
+      : SOURCE_LABEL_BY_KIND[kind];
 
   const favoritePhoto = useFavoritePhoto();
   const unfavoritePhoto = useUnfavoritePhoto();
