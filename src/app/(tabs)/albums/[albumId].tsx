@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { StyleSheet, View } from "react-native";
 import { useBulkDelete } from "@/actions/use-bulk-delete";
 import { useBulkFavorite } from "@/actions/use-bulk-favorite";
@@ -9,6 +9,10 @@ import { EmptyState } from "@/components/empty-state";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { MorphingPill } from "@/components/morphing-pill";
 import { SortStrip } from "@/components/sort-strip";
+import {
+  SourcePickerSheet,
+  type SourcePickerHandle,
+} from "@/components/source-picker-sheet";
 import { firstParam } from "@/lib/route-params";
 import { seededShuffle } from "@/lib/seeded-shuffle";
 import { FAVORITES_ALBUM_ID } from "@/lib/source-set";
@@ -50,6 +54,7 @@ export default function AlbumGalleryScreen() {
   const startSlideshow = useStartSlideshow();
   const selectedIds = useSelectionStore((s) => s.selectedIds);
   const cancelSelection = useSelectionStore((s) => s.cancel);
+  const pickerRef = useRef<SourcePickerHandle>(null);
 
   const allAssets = useMemo(
     () =>
@@ -97,6 +102,8 @@ export default function AlbumGalleryScreen() {
         ? { source: "favorites", assets: allAssets }
         : { source: "album", albumId, assets: allAssets },
     );
+  const handleLongPressShuffle = () =>
+    pickerRef.current?.present({ shuffleOnDismiss: true });
   const handleOpenPhoto = useCallback(
     (id: string) => {
       router.push({
@@ -131,7 +138,9 @@ export default function AlbumGalleryScreen() {
         onFavoriteAll={handleFavoriteAll}
         onDeleteAll={handleDeleteAll}
         onShuffle={handleShuffle}
+        onLongPressShuffle={handleLongPressShuffle}
       />
+      <SourcePickerSheet ref={pickerRef} />
     </View>
   );
 }

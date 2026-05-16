@@ -14,7 +14,9 @@ export type AlbumOrAllSource =
 export const assetsQueryKey = (source: AlbumOrAllSource) =>
   ["assets", sourceSetKey(source)] as const;
 
-function assetsInfiniteOptions(source: AlbumOrAllSource) {
+// Exported so non-hook callers (e.g. the source picker's union resolver) can
+// use queryClient.fetchInfiniteQuery / getQueryData with the same shape.
+export function assetsInfiniteOptions(source: AlbumOrAllSource) {
   return {
     queryKey: assetsQueryKey(source),
     initialPageParam: undefined as string | undefined,

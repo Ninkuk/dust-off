@@ -107,6 +107,21 @@ export const strings = {
       shutter: "Shutter",
       iso: "ISO",
     },
+    sourcePicker: {
+      title: "Where to shuffle from?",
+      helper: "Tap to toggle. Auto-saves on close.",
+      allPhotos: "All Photos",
+      favorites: "Favorites",
+      // Returns a raw count, or "247 · 12 eligible" when filters apply. Phase 7
+      // always returns the raw count (eligible filtering is Phase 8).
+      formatCount: (total: number, eligible: number) =>
+        eligible === total
+          ? total.toLocaleString()
+          : `${total.toLocaleString()} · ${eligible.toLocaleString()} eligible`,
+      rowA11y: (name: string, count: number, selected: boolean) =>
+        `${name}, ${count} photos, ${selected ? "selected" : "not selected"}`,
+      resolving: "Resolving…",
+    },
     empty: {
       adjust: "Adjust sources",
       useAllPhotos: "Use All Photos",

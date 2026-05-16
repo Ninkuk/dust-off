@@ -9,7 +9,7 @@ import {
   usePillContextLabel,
 } from "@/hooks/use-pill-context-label";
 import { type PillState, usePillState } from "@/hooks/use-pill-state";
-import { selectionTick } from "@/lib/haptics";
+import { heavyTap, selectionTick } from "@/lib/haptics";
 import { type Toast, useToastStore } from "@/state/toast-store";
 import { tabularNums, type, useTheme } from "@/theme";
 import { ActionsSheet } from "./actions-sheet";
@@ -25,11 +25,13 @@ export function MorphingPill({
   onFavoriteAll,
   onDeleteAll,
   onShuffle,
+  onLongPressShuffle,
 }: {
   scope: PillScope;
   onFavoriteAll: () => void;
   onDeleteAll: () => void;
   onShuffle: () => void;
+  onLongPressShuffle?: () => void;
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -44,6 +46,13 @@ export function MorphingPill({
     selectionTick();
     onShuffle();
   };
+
+  const handleShuffleLongPress = onLongPressShuffle
+    ? () => {
+        heavyTap();
+        onLongPressShuffle();
+      }
+    : undefined;
 
   const handleActionsPress = () => {
     selectionTick();
@@ -75,6 +84,7 @@ export function MorphingPill({
             theme,
             toast,
             onShuffle: handleShufflePress,
+            onShuffleLongPress: handleShuffleLongPress,
             onActions: handleActionsPress,
           })}
         </BlurView>
@@ -95,6 +105,7 @@ function renderContent({
   theme,
   toast,
   onShuffle,
+  onShuffleLongPress,
   onActions,
 }: {
   state: PillState;
@@ -102,6 +113,7 @@ function renderContent({
   theme: ReturnType<typeof useTheme>;
   toast: Toast | null;
   onShuffle: () => void;
+  onShuffleLongPress: (() => void) | undefined;
   onActions: () => void;
 }): ReactNode {
   switch (state) {
@@ -109,6 +121,8 @@ function renderContent({
       return (
         <Pressable
           onPress={onShuffle}
+          onLongPress={onShuffleLongPress}
+          delayLongPress={450}
           accessibilityRole="button"
           accessibilityLabel={label}
           hitSlop={8}

@@ -1,5 +1,5 @@
-import { router } from "expo-router";
-import { useCallback, useEffect, useMemo } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { StyleSheet, View } from "react-native";
 import { useBulkDelete } from "@/actions/use-bulk-delete";
 import { useBulkFavorite } from "@/actions/use-bulk-favorite";
@@ -10,9 +10,14 @@ import { GalleryGrid } from "@/components/gallery-grid";
 import { MorphingPill } from "@/components/morphing-pill";
 import { PartialAccessBanner } from "@/components/partial-access-banner";
 import { SortStrip } from "@/components/sort-strip";
+import {
+  SourcePickerSheet,
+  type SourcePickerHandle,
+} from "@/components/source-picker-sheet";
 import { useFirstReveal } from "@/hooks/use-first-reveal";
 import { isPermissionLimited } from "@/lib/permission";
 import { seededShuffle } from "@/lib/seeded-shuffle";
+import { firstParam } from "@/lib/route-params";
 import { strings } from "@/lib/strings";
 import {
   type AlbumOrAllSource,
@@ -44,6 +49,7 @@ export default function GalleryScreen() {
   const startSlideshow = useStartSlideshow();
   const selectedIds = useSelectionStore((s) => s.selectedIds);
   const cancelSelection = useSelectionStore((s) => s.cancel);
+  const pickerRef = useRef<SourcePickerHandle>(null);
 
   const allAssets = useMemo(
     () => query.data?.pages.flatMap((p) => p.assets) ?? [],
@@ -81,12 +87,42 @@ export default function GalleryScreen() {
   const handleDeleteAll = () => bulkDelete([...selectedIds]);
   const handleShuffle = () =>
     startSlideshow({ source: "all", assets: allAssets });
+  const handleLongPressShuffle = () =>
+    pickerRef.current?.present({ shuffleOnDismiss: true });
   const handleOpenPhoto = useCallback((id: string) => {
     router.push({
       pathname: "/theater/[assetId]",
       params: { assetId: id, kind: "all", autoplay: "0" },
     });
   }, []);
+
+  // Bridge for /theater/empty CTAs: ?openPicker=1 reopens the picker (no
+  // auto-shuffle; user must dismiss again to start). ?startSlideshow=all
+  // starts a one-shot All-Photos slideshow without mutating defaultSource.
+  const queryParams = useLocalSearchParams<{
+    openPicker?: string | string[];
+    startSlideshow?: string | string[];
+  }>();
+  const queryParamHandledRef = useRef(false);
+  useEffect(() => {
+    if (queryParamHandledRef.current) return;
+    const openPicker = firstParam(queryParams.openPicker) === "1";
+    const startKind = firstParam(queryParams.startSlideshow);
+    if (openPicker) {
+      queryParamHandledRef.current = true;
+      pickerRef.current?.present({ shuffleOnDismiss: false });
+      router.setParams({ openPicker: undefined });
+    } else if (startKind === "all" && allAssets.length > 0) {
+      queryParamHandledRef.current = true;
+      startSlideshow({ source: "all", assets: allAssets });
+      router.setParams({ startSlideshow: undefined });
+    }
+  }, [
+    queryParams.openPicker,
+    queryParams.startSlideshow,
+    allAssets,
+    startSlideshow,
+  ]);
 
   return (
     <View style={[styles.root, { backgroundColor: theme.surface }]}>
@@ -113,7 +149,9 @@ export default function GalleryScreen() {
         onFavoriteAll={handleFavoriteAll}
         onDeleteAll={handleDeleteAll}
         onShuffle={handleShuffle}
+        onLongPressShuffle={handleLongPressShuffle}
       />
+      <SourcePickerSheet ref={pickerRef} />
     </View>
   );
 }
