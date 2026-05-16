@@ -9,6 +9,7 @@ import {
   useFavoritePhoto,
   useUnfavoritePhoto,
 } from "@/actions/use-favorite-photo";
+import { GestureGuideOverlay } from "@/components/gesture-guide-overlay";
 import { LongPressRing } from "@/components/long-press-ring";
 import { PhotoInfoSheet } from "@/components/photo-info-sheet";
 import {
@@ -36,6 +37,7 @@ import {
 } from "@/queries/use-assets-query";
 import { useFavoritesStore } from "@/state/favorites-store";
 import { useGalleryStore } from "@/state/gallery-store";
+import { usePreferencesStore } from "@/state/preferences-store";
 import { useSlideshowInputStore } from "@/state/slideshow-input-store";
 import { useSlideshowStore } from "@/state/slideshow-store";
 
@@ -217,6 +219,22 @@ export default function TheaterScreen() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
 
+  // DS-19 gesture guide. Shows on the user's first ever autoplayed slideshow,
+  // gated by AsyncStorage `seenSlideshowGuide`. We persist the flag on overlay
+  // mount (not on dismiss) so a backgrounded-then-killed mid-overlay session
+  // won't re-show on the next launch.
+  const seenSlideshowGuide = usePreferencesStore((s) => s.seenSlideshowGuide);
+  const [guideDismissed, setGuideDismissed] = useState(false);
+  const showGuide =
+    wantAutoplay && !seenSlideshowGuide && !guideDismissed && current != null;
+  useEffect(() => {
+    if (showGuide) {
+      usePreferencesStore
+        .getState()
+        .setPreference("seenSlideshowGuide", true);
+    }
+  }, [showGuide]);
+
   if (!current) return null;
 
   const dismiss = () => router.back();
@@ -303,6 +321,9 @@ export default function TheaterScreen() {
         asset={current}
         onPresentChange={setInfoOpen}
       />
+      {showGuide ? (
+        <GestureGuideOverlay onDismiss={() => setGuideDismissed(true)} />
+      ) : null}
     </View>
   );
 }

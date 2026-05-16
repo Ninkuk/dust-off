@@ -123,6 +123,14 @@ export const strings = {
         `${name}, ${count} photos, ${selected ? "selected" : "not selected"}`,
       resolving: "Resolving…",
     },
+    gestureGuide: {
+      shake: "Shake",
+      doubleTap: "Double-tap to favorite",
+      swipeHint: "Swipe to navigate",
+      gotIt: "Got it",
+      a11y:
+        "Slideshow gestures: tap to play, swipe to navigate, shake to reshuffle, double-tap to favorite. Tap anywhere to dismiss.",
+    },
     empty: {
       adjust: "Adjust sources",
       useAllPhotos: "Use All Photos",
