@@ -5,6 +5,7 @@ import { useBulkDelete } from "@/actions/use-bulk-delete";
 import { useBulkFavorite } from "@/actions/use-bulk-favorite";
 import { useReshuffleGallery } from "@/actions/use-reshuffle-gallery";
 import { useStartSlideshow } from "@/actions/use-start-slideshow";
+import { useStartSlideshowFromSelection } from "@/actions/use-start-slideshow-from-selection";
 import { EmptyState } from "@/components/empty-state";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { MorphingPill } from "@/components/morphing-pill";
@@ -52,6 +53,7 @@ export default function AlbumGalleryScreen() {
   const bulkFavorite = useBulkFavorite();
   const bulkDelete = useBulkDelete();
   const startSlideshow = useStartSlideshow();
+  const startFromSelection = useStartSlideshowFromSelection();
   const selectedIds = useSelectionStore((s) => s.selectedIds);
   const cancelSelection = useSelectionStore((s) => s.cancel);
   const pickerRef = useRef<SourcePickerHandle>(null);
@@ -104,6 +106,7 @@ export default function AlbumGalleryScreen() {
     );
   const handleLongPressShuffle = () =>
     pickerRef.current?.present({ shuffleOnDismiss: true });
+  const handleSlideshowSelection = () => startFromSelection(allAssets);
   const handleOpenPhoto = useCallback(
     (id: string) => {
       router.push({
@@ -135,10 +138,12 @@ export default function AlbumGalleryScreen() {
       )}
       <MorphingPill
         scope={{ kind: "album", title: albumTitle }}
+        selectionCount={selectedIds.size}
         onFavoriteAll={handleFavoriteAll}
         onDeleteAll={handleDeleteAll}
         onShuffle={handleShuffle}
         onLongPressShuffle={handleLongPressShuffle}
+        onSlideshowSelection={handleSlideshowSelection}
       />
       <SourcePickerSheet ref={pickerRef} />
     </View>

@@ -57,6 +57,7 @@ export const strings = {
   actionsSheet: {
     favoriteAll: "Favorite all",
     deleteAll: "Delete all",
+    slideshowSelection: (n: number) => `Slideshow these ${n}`,
   },
   toast: {
     saved: "Saved.",

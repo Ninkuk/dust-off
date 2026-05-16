@@ -22,16 +22,20 @@ const TAB_BAR_CLEARANCE = 60;
 
 export function MorphingPill({
   scope,
+  selectionCount,
   onFavoriteAll,
   onDeleteAll,
   onShuffle,
   onLongPressShuffle,
+  onSlideshowSelection,
 }: {
   scope: PillScope;
+  selectionCount: number;
   onFavoriteAll: () => void;
   onDeleteAll: () => void;
   onShuffle: () => void;
   onLongPressShuffle?: () => void;
+  onSlideshowSelection?: () => void;
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -92,8 +96,14 @@ export function MorphingPill({
 
       <ActionsSheet
         ref={sheetRef}
+        selectionCount={selectionCount}
         onFavoriteAll={wrapDismiss(onFavoriteAll)}
         onDeleteAll={wrapDismiss(onDeleteAll)}
+        onSlideshowSelection={
+          onSlideshowSelection
+            ? wrapDismiss(onSlideshowSelection)
+            : undefined
+        }
       />
     </>
   );

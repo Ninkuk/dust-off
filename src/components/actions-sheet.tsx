@@ -8,13 +8,25 @@ import { SheetRow } from "./sheet-row";
 export const ActionsSheet = forwardRef<
   BottomSheetModal,
   {
+    selectionCount: number;
     onFavoriteAll: () => void;
     onDeleteAll: () => void;
+    onSlideshowSelection?: () => void;
   }
->(function ActionsSheet({ onFavoriteAll, onDeleteAll }, ref) {
+>(function ActionsSheet(
+  { selectionCount, onFavoriteAll, onDeleteAll, onSlideshowSelection },
+  ref,
+) {
   return (
     <Sheet ref={ref}>
       <BottomSheetView style={styles.root}>
+        {onSlideshowSelection ? (
+          <SheetRow
+            label={strings.actionsSheet.slideshowSelection(selectionCount)}
+            onPress={onSlideshowSelection}
+            disabled={selectionCount === 0}
+          />
+        ) : null}
         <SheetRow
           label={strings.actionsSheet.favoriteAll}
           onPress={onFavoriteAll}
