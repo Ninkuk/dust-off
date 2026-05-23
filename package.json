@@ -4,6 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
+    "start:tunnel": "expo start --tunnel",
+    "stop": "lsof -ti:8081 | xargs kill -9 2>/dev/null || true",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
