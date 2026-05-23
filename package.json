@@ -9,6 +9,7 @@
     "web": "expo start --web",
     "fixtures:fetch": "node scripts/fetch-fixtures.mjs",
     "seed:android": "bash scripts/seed-android-emulator.sh",
+    "seed:ios": "bash scripts/seed-ios-simulator.sh",
     "lint": "expo lint",
     "react-doctor": "npx react-doctor@latest"
   },
