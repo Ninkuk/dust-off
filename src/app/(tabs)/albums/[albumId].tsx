@@ -96,6 +96,13 @@ export default function AlbumGalleryScreen() {
     ? strings.albums.favoritesTitle
     : (lookedUpTitle ?? "");
 
+  const handleBack = useCallback(() => {
+    // unstable_settings.initialRouteName in albums/_layout guarantees the
+    // albums list sits beneath [albumId] in the stack, so back is always safe.
+    if (router.canGoBack()) router.back();
+    else router.replace("/albums");
+  }, []);
+
   const handleFavoriteAll = () => bulkFavorite([...selectedIds]);
   const handleDeleteAll = () => bulkDelete([...selectedIds]);
   const handleShuffle = () =>
@@ -125,6 +132,8 @@ export default function AlbumGalleryScreen() {
         count={sortedAssets.length}
         selectionCount={selectedIds.size}
         onCancel={cancelSelection}
+        onBack={handleBack}
+        title={albumTitle || undefined}
       />
       {!ready ? null : sortedAssets.length === 0 ? (
         <EmptyState title={strings.emptyStates.nothingYet} />

@@ -25,6 +25,9 @@ export const strings = {
     albums: "Albums",
     settings: "Settings",
   },
+  nav: {
+    backA11y: "Back",
+  },
   gallery: {
     sortLabels: {
       random: "Random",
