@@ -1,5 +1,5 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import type { Asset } from "expo-media-library";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
@@ -12,11 +12,9 @@ import {
 import { GestureGuideOverlay } from "@/components/gesture-guide-overlay";
 import { LongPressRing } from "@/components/long-press-ring";
 import { PhotoInfoSheet } from "@/components/photo-info-sheet";
-import {
-  TheaterChrome,
-  type TheaterChromeHandle,
-} from "@/components/theater-chrome";
+import { TheaterChrome } from "@/components/theater-chrome";
 import { TheaterLongPressMenu } from "@/components/theater-long-press-menu";
+import { TheaterPauseControls } from "@/components/theater-pause-controls";
 import { TheaterProgressBar } from "@/components/theater-progress-bar";
 import { TheaterToast } from "@/components/theater-toast";
 import { TheaterViewer } from "@/components/theater-viewer";
@@ -208,7 +206,7 @@ export default function TheaterScreen() {
   useAppStatePause();
   useShakeToShuffle();
 
-  const chromeRef = useRef<TheaterChromeHandle>(null);
+  const navigation = useNavigation();
   const menuRef = useRef<BottomSheetModal>(null);
   const infoRef = useRef<BottomSheetModal>(null);
 
@@ -241,7 +239,6 @@ export default function TheaterScreen() {
 
   const handleTapCenter = () => {
     togglePlayPause();
-    chromeRef.current?.reveal();
   };
 
   const handleLongPressBegin = (x: number, y: number) => {
@@ -264,10 +261,32 @@ export default function TheaterScreen() {
 
   const handleGoToFolder = () => {
     if (!current.albumId) return;
-    router.replace({
-      pathname: "/albums/[albumId]",
-      params: { albumId: current.albumId },
-    });
+    const targetAlbumId = current.albumId;
+    // React-navigation nested-navigate with `initial: false`. This is the
+    // documented way to deep-link into a nested stack while preserving the
+    // back-stack: the inner navigator's `initialRouteName` (set via
+    // `unstable_settings` in albums/_layout) is materialized below the
+    // target screen. router.replace/router.push bypass this — they push
+    // the leaf as the stack's first entry, and NativeTabs.backBehavior
+    // ("history" by default) then routes back to the previous tab. Dispatch
+    // on the parent of theater's Stack (the root Stack) so this also pops
+    // theater on the way down.
+    const rootNav = navigation.getParent();
+    if (rootNav) {
+      rootNav.navigate("(tabs)", {
+        screen: "albums",
+        params: {
+          screen: "[albumId]",
+          initial: false,
+          params: { albumId: targetAlbumId },
+        },
+      });
+    } else {
+      router.replace({
+        pathname: "/albums/[albumId]",
+        params: { albumId: targetAlbumId },
+      });
+    }
   };
 
   // Position label uses queue index for the slideshow's view of "where we are."
@@ -285,7 +304,6 @@ export default function TheaterScreen() {
         onNext={nextSlide}
         onDismiss={dismiss}
         onTapCenter={handleTapCenter}
-        onTapEdgeRevealsChrome={() => chromeRef.current?.reveal()}
         onLongPressBegin={handleLongPressBegin}
         onLongPressCommit={handleLongPressCommit}
         onLongPressCancel={handleLongPressCancel}
@@ -296,11 +314,21 @@ export default function TheaterScreen() {
       <TheaterProgressBar />
       <LongPressRing x={ringX} y={ringY} progress={ringProgress} />
       <TheaterChrome
-        ref={chromeRef}
         source={sourceLabel}
         position={displayPosition}
         onClose={dismiss}
         isSheetOpen={menuOpen || infoOpen}
+      />
+      <TheaterPauseControls
+        isFavorited={isFavorited}
+        hasAlbum={!!current.albumId}
+        onFavorite={() => favoritePhoto(current.id)}
+        onUnfavorite={() => unfavoritePhoto(current.id)}
+        onDelete={() =>
+          deletePhoto(current.id, () => skipUnavailable(current.id))
+        }
+        onShowInfo={() => infoRef.current?.present()}
+        onGoToFolder={handleGoToFolder}
       />
       <TheaterToast />
       <TheaterLongPressMenu

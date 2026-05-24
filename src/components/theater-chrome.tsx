@@ -1,11 +1,5 @@
 import { X } from "lucide-react-native";
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-} from "react";
+import { useEffect } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -13,72 +7,40 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { strings } from "@/lib/strings";
+import { useSlideshowStore } from "@/state/slideshow-store";
 import { useToastStore } from "@/state/toast-store";
 import { tabularNums, type, useTheme } from "@/theme";
-import { strings } from "@/lib/strings";
 
-const AUTO_HIDE_MS = 2000;
 const FADE_MS = 220;
 
-export type TheaterChromeHandle = {
-  reveal: () => void;
-};
-
-export const TheaterChrome = forwardRef<
-  TheaterChromeHandle,
-  {
-    source: string;
-    position: string;
-    onClose: () => void;
-    isSheetOpen: boolean;
-  }
->(function TheaterChrome({ source, position, onClose, isSheetOpen }, ref) {
+export function TheaterChrome({
+  source,
+  position,
+  onClose,
+  isSheetOpen,
+}: {
+  source: string;
+  position: string;
+  onClose: () => void;
+  isSheetOpen: boolean;
+}) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const opacity = useSharedValue(1);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Hide entirely while a toast is up — they share the same vertical slot.
+  const isPlaying = useSlideshowStore((s) => s.isPlaying);
   const toastActive = useToastStore((s) => s.current !== null);
 
-  const clearTimer = useCallback(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  }, []);
-
-  const scheduleHide = useCallback(() => {
-    clearTimer();
-    timerRef.current = setTimeout(() => {
-      opacity.value = withTiming(0, { duration: FADE_MS });
-      timerRef.current = null;
-    }, AUTO_HIDE_MS);
-  }, [clearTimer, opacity]);
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      reveal: () => {
-        opacity.value = withTiming(1, { duration: FADE_MS });
-        if (!isSheetOpen) scheduleHide();
-      },
-    }),
-    [isSheetOpen, opacity, scheduleHide],
-  );
+  // Chrome visible iff paused OR a sheet is open. The sheet branch preserves
+  // the previous behavior of holding chrome up while the long-press menu /
+  // info sheet is active, regardless of play state.
+  const shouldShow = !isPlaying || isSheetOpen;
+  const opacity = useSharedValue(shouldShow ? 1 : 0);
 
   useEffect(() => {
-    if (isSheetOpen) {
-      clearTimer();
-      opacity.value = withTiming(1, { duration: FADE_MS });
-    } else {
-      scheduleHide();
-    }
-    return clearTimer;
-  }, [isSheetOpen, opacity, clearTimer, scheduleHide]);
+    opacity.value = withTiming(shouldShow ? 1 : 0, { duration: FADE_MS });
+  }, [shouldShow, opacity]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   if (toastActive) return null;
 
@@ -96,9 +58,7 @@ export const TheaterChrome = forwardRef<
         <Text style={[type.body, styles.dot, { color: theme.textPrimary }]}>
           {" · "}
         </Text>
-        <Text
-          style={[type.body, tabularNums, { color: theme.textPrimary }]}
-        >
+        <Text style={[type.body, tabularNums, { color: theme.textPrimary }]}>
           {position}
         </Text>
         <View style={styles.spacer} />
@@ -113,7 +73,7 @@ export const TheaterChrome = forwardRef<
       </View>
     </Animated.View>
   );
-});
+}
 
 const styles = StyleSheet.create({
   wrapper: {

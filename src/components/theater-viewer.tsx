@@ -34,7 +34,6 @@ export function TheaterViewer({
   onNext,
   onDismiss,
   onTapCenter,
-  onTapEdgeRevealsChrome,
   onLongPressBegin,
   onLongPressCommit,
   onLongPressCancel,
@@ -47,7 +46,6 @@ export function TheaterViewer({
   onNext: () => void;
   onDismiss: () => void;
   onTapCenter: () => void;
-  onTapEdgeRevealsChrome: () => void;
   onLongPressBegin: (x: number, y: number) => void;
   onLongPressCommit: () => void;
   onLongPressCancel: () => void;
@@ -268,7 +266,6 @@ export function TheaterViewer({
     .numberOfTaps(1)
     .requireExternalGestureToFail(doubleTap)
     .onEnd((e) => {
-      runOnJS(onTapEdgeRevealsChrome)();
       const x = e.x;
       if (x < width * 0.33) runOnJS(onPrev)();
       else if (x > width * 0.66) runOnJS(onNext)();
