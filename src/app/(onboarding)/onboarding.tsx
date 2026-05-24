@@ -9,6 +9,7 @@ import {
   Gesture,
   GestureDetector,
 } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   type SharedValue,
   useAnimatedStyle,
@@ -25,6 +26,7 @@ const SWIPE_THRESHOLD = 0.25;
 
 export default function OnboardingScreen() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const onComplete = useOnboardingComplete();
   const [width, setWidth] = useState(Dimensions.get("window").width);
   const translateX = useSharedValue(0);
@@ -96,7 +98,10 @@ export default function OnboardingScreen() {
         </Animated.View>
       </GestureDetector>
 
-      <View style={styles.dots} pointerEvents="none">
+      <View
+        style={[styles.dots, { bottom: insets.bottom + 24 }]}
+        pointerEvents="none"
+      >
         {cards.map((c, i) => (
           <Dot
             key={c.key}
@@ -133,7 +138,6 @@ const styles = StyleSheet.create({
   page: { height: "100%" },
   dots: {
     position: "absolute",
-    bottom: 56,
     left: 0,
     right: 0,
     flexDirection: "row",

@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import type { Album } from "expo-media-library";
 import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AlbumsGrid, type AlbumsGridItem } from "@/components/albums-grid";
 import { PartialAccessBanner } from "@/components/partial-access-banner";
 import { isPermissionLimited } from "@/lib/permission";
@@ -21,6 +22,7 @@ const ALL_SOURCE: AlbumOrAllSource = { kind: "all" };
 
 export default function AlbumsScreen() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const seed = useGalleryStore((s) => s.seed);
   const favoritesCount = useFavoritesStore((s) => s.favorites.size);
@@ -50,7 +52,12 @@ export default function AlbumsScreen() {
   const sharedCount = allQuery.data?.pages?.[0]?.totalCount ?? 0;
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.surface }]}>
+    <View
+      style={[
+        styles.root,
+        { backgroundColor: theme.surface, paddingTop: insets.top + 8 },
+      ]}
+    >
       {limited ? (
         <PartialAccessBanner shared={sharedCount} total={sharedCount} />
       ) : null}

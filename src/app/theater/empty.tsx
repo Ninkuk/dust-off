@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button } from "@/components/button";
 import { strings } from "@/lib/strings";
 import { type, useTheme } from "@/theme";
@@ -12,8 +13,17 @@ import { type, useTheme } from "@/theme";
 //     One-shot — does NOT mutate the user's persisted defaultSource.
 export default function TheaterEmptyScreen() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   return (
-    <View style={[styles.root, { backgroundColor: theme.surface }]}>
+    <View
+      style={[
+        styles.root,
+        {
+          backgroundColor: theme.surface,
+          paddingBottom: insets.bottom + 8,
+        },
+      ]}
+    >
       <Text
         accessibilityRole="header"
         style={[type.display, styles.title, { color: theme.textPrimary }]}
