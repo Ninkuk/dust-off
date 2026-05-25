@@ -1,23 +1,27 @@
 import { FlashList } from "@shopify/flash-list";
 import type { Asset } from "expo-media-library";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-  RefreshControl,
-  useWindowDimensions,
-} from "react-native";
+import { RefreshControl, useWindowDimensions, View } from "react-native";
 import {
   Gesture,
   GestureDetector,
 } from "react-native-gesture-handler";
-import { runOnJS, useSharedValue, withTiming } from "react-native-reanimated";
+import Animated, {
+  runOnJS,
+  useAnimatedScrollHandler,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { heavyTap, mediumTap } from "@/lib/haptics";
 import { strings } from "@/lib/strings";
 import { useSelectionStore } from "@/state/selection-store";
 import { useToastStore } from "@/state/toast-store";
 import { GalleryTile, REVEAL_DURATION_MS } from "./gallery-tile";
+
+const AnimatedFlashList = Animated.createAnimatedComponent(
+  FlashList,
+) as unknown as typeof FlashList;
 
 export function GalleryGrid({
   assets,
@@ -36,7 +40,7 @@ export function GalleryGrid({
   const revealProgress = useSharedValue(
     isFirstReveal ? 0 : REVEAL_DURATION_MS,
   );
-  const scrollOffsetYRef = useRef(0);
+  const scrollY = useSharedValue(0);
   const dragCapFiredRef = useRef(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -59,7 +63,7 @@ export function GalleryGrid({
     if (cellSize <= 0) return null;
     const col = Math.floor(x / cellSize);
     if (col < 0 || col >= numColumns) return null;
-    const absoluteY = y + scrollOffsetYRef.current;
+    const absoluteY = y + scrollY.value;
     if (absoluteY < 0) return null;
     const row = Math.floor(absoluteY / cellSize);
     const idx = row * numColumns + col;
@@ -103,8 +107,7 @@ export function GalleryGrid({
     setRefreshing(true);
     const top =
       cellSize > 0
-        ? Math.max(0, Math.floor(scrollOffsetYRef.current / cellSize)) *
-          numColumns
+        ? Math.max(0, Math.floor(scrollY.value / cellSize)) * numColumns
         : 0;
     const anchorIds: string[] = [];
     for (let i = 0; i < numColumns; i++) {
@@ -115,9 +118,11 @@ export function GalleryGrid({
     requestAnimationFrame(() => setRefreshing(false));
   };
 
-  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    scrollOffsetYRef.current = e.nativeEvent.contentOffset.y;
-  };
+  const animatedScrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
 
   const pan = Gesture.Pan()
     .activateAfterLongPress(300)
@@ -130,30 +135,32 @@ export function GalleryGrid({
 
   return (
     <GestureDetector gesture={pan}>
-      <FlashList
-        data={assets}
-        numColumns={numColumns}
-        keyExtractor={(item) => item.id}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        refreshControl={
-          onPullToShuffle ? (
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
+      <View style={{ flex: 1 }}>
+        <AnimatedFlashList
+          data={assets}
+          numColumns={numColumns}
+          keyExtractor={(item) => item.id}
+          onScroll={animatedScrollHandler}
+          scrollEventThrottle={16}
+          refreshControl={
+            onPullToShuffle ? (
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+              />
+            ) : undefined
+          }
+          renderItem={({ item, index }) => (
+            <GalleryTile
+              asset={item}
+              index={index}
+              numColumns={numColumns}
+              revealProgress={revealProgress}
+              onOpen={onOpenPhoto}
             />
-          ) : undefined
-        }
-        renderItem={({ item, index }) => (
-          <GalleryTile
-            asset={item}
-            index={index}
-            numColumns={numColumns}
-            revealProgress={revealProgress}
-            onOpen={onOpenPhoto}
-          />
-        )}
-      />
+          )}
+        />
+      </View>
     </GestureDetector>
   );
 }
