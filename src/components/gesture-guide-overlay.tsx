@@ -1,4 +1,3 @@
-import { BlurView } from "expo-blur";
 import { useEffect } from "react";
 import {
   AccessibilityInfo,
@@ -19,8 +18,9 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { strings } from "@/lib/strings";
-import { type, useTheme } from "@/theme";
+import { ink, type, useTheme } from "@/theme";
 import { Button } from "./button";
+import { InkPill } from "./ink-pill";
 
 // DS-19 first-slideshow gesture guide. Translucent dark scrim + animated
 // hints. Dismisses on first tap or `Got it`. Reduce Motion gating is Phase 8.
@@ -162,17 +162,12 @@ export function GestureGuideOverlay({ onDismiss }: { onDismiss: () => void }) {
 }
 
 function Chip({ label }: { label: string }) {
-  const theme = useTheme();
   return (
-    <BlurView
-      intensity={50}
-      tint={theme.isDark ? "dark" : "light"}
-      style={styles.chip}
-    >
-      <Text style={[type.caption, styles.chipText, { color: theme.textPrimary }]}>
+    <InkPill size="chip">
+      <Text style={[type.caption, styles.chipText, { color: ink.textPrimary }]}>
         {label}
       </Text>
-    </BlurView>
+    </InkPill>
   );
 }
 
@@ -192,12 +187,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: "center",
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 999,
-    overflow: "hidden",
   },
   chipText: {
     fontSize: 13,
