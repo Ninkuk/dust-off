@@ -1,22 +1,20 @@
-import { BlurView } from "expo-blur";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { selectionTick } from "@/lib/haptics";
 import { strings } from "@/lib/strings";
 import { type Toast, useToastStore } from "@/state/toast-store";
-import { type, useTheme } from "@/theme";
-
-type ChromeMode = "blur" | "bare";
+import { ink, type } from "@/theme";
+import { InkPill } from "./ink-pill";
 
 export function ToastPill({
   toast,
-  chrome = "blur",
+  wrapped = true,
 }: {
   toast: Toast;
-  // "blur" wraps in BlurView (free-floating use, e.g. theater).
-  // "bare" returns the row content only (already inside another blur surface).
-  chrome?: ChromeMode;
+  // `wrapped` controls chrome ownership: when true, ToastPill renders its
+  // own InkPill chrome (standalone use, e.g. theater). When false, the
+  // parent already provides chrome (e.g. nested inside MorphingPill).
+  wrapped?: boolean;
 }) {
-  const theme = useTheme();
   const undo = useToastStore((s) => s.undo);
   const message = toast.kind === "flash" ? toast.message : strings.toast.saved;
   const showUndo = toast.kind !== "flash";
@@ -28,10 +26,10 @@ export function ToastPill({
 
   const row = (
     <View style={styles.row}>
-      <Text style={[type.body, { color: theme.textPrimary }]}>{message}</Text>
+      <Text style={[type.body, { color: ink.textPrimary }]}>{message}</Text>
       {showUndo ? (
         <>
-          <Text style={[type.body, styles.dot, { color: theme.textPrimary }]}>
+          <Text style={[type.body, styles.dot, { color: ink.textPrimary }]}>
             {" · "}
           </Text>
           <Pressable
@@ -40,7 +38,7 @@ export function ToastPill({
             accessibilityLabel={strings.toast.undo}
             hitSlop={8}
           >
-            <Text style={[type.body, { color: theme.accent }]}>
+            <Text style={[type.body, { color: ink.accent }]}>
               {strings.toast.undo}
             </Text>
           </Pressable>
@@ -49,27 +47,12 @@ export function ToastPill({
     </View>
   );
 
-  if (chrome === "bare") return row;
+  if (!wrapped) return row;
 
-  return (
-    <BlurView
-      intensity={60}
-      tint={theme.isDark ? "dark" : "light"}
-      style={styles.pill}
-    >
-      {row}
-    </BlurView>
-  );
+  return <InkPill size="pill">{row}</InkPill>;
 }
 
 const styles = StyleSheet.create({
-  pill: {
-    minHeight: 44,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 999,
-    overflow: "hidden",
-  },
   row: {
     flexDirection: "row",
     alignItems: "center",

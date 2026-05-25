@@ -1,5 +1,4 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { BlurView } from "expo-blur";
 import { Sparkle } from "lucide-react-native";
 import { type ReactNode, useRef } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -11,13 +10,15 @@ import {
 import { type PillState, usePillState } from "@/hooks/use-pill-state";
 import { heavyTap, selectionTick } from "@/lib/haptics";
 import { type Toast, useToastStore } from "@/state/toast-store";
-import { tabularNums, type, useTheme } from "@/theme";
+import { ink, tabularNums, type } from "@/theme";
 import { ActionsSheet } from "./actions-sheet";
+import { InkPill } from "./ink-pill";
 import { ToastPill } from "./toast-pill";
 
-// NativeTabs doesn't expose a tab-bar height to JS, so we approximate. The
-// pill clears typical iOS (~49pt + home indicator) and Android (~56dp + nav)
-// tab bars; dial in during dogfooding if it floats too high or low.
+// NativeTabs doesn't expose a tab-bar height to JS, so we approximate.
+// Clearance is purely geometric now (the bar is solid ink, no blur stack
+// to preserve). Dial in during dogfooding if the pill floats too high
+// or low above typical iOS/Android tab bars.
 const TAB_BAR_CLEARANCE = 60;
 
 export function MorphingPill({
@@ -37,7 +38,6 @@ export function MorphingPill({
   onLongPressShuffle?: () => void;
   onSlideshowSelection?: () => void;
 }) {
-  const theme = useTheme();
   const insets = useSafeAreaInsets();
   const state = usePillState();
   const label = usePillContextLabel(scope);
@@ -77,21 +77,16 @@ export function MorphingPill({
           { bottom: insets.bottom + TAB_BAR_CLEARANCE },
         ]}
       >
-        <BlurView
-          intensity={60}
-          tint={theme.isDark ? "dark" : "light"}
-          style={styles.pill}
-        >
+        <InkPill size="pill">
           {renderContent({
             state,
             label,
-            theme,
             toast,
             onShuffle: handleShufflePress,
             onShuffleLongPress: handleShuffleLongPress,
             onActions: handleActionsPress,
           })}
-        </BlurView>
+        </InkPill>
       </View>
 
       <ActionsSheet
@@ -112,7 +107,6 @@ export function MorphingPill({
 function renderContent({
   state,
   label,
-  theme,
   toast,
   onShuffle,
   onShuffleLongPress,
@@ -120,7 +114,6 @@ function renderContent({
 }: {
   state: PillState;
   label: string;
-  theme: ReturnType<typeof useTheme>;
   toast: Toast | null;
   onShuffle: () => void;
   onShuffleLongPress: (() => void) | undefined;
@@ -144,10 +137,10 @@ function renderContent({
           <Sparkle
             size={16}
             strokeWidth={2}
-            color={theme.textPrimary}
+            color={ink.textPrimary}
             style={styles.icon}
           />
-          <Text style={[type.body, { color: theme.textPrimary }]}>
+          <Text style={[type.body, { color: ink.textPrimary }]}>
             {label}
           </Text>
         </Pressable>
@@ -165,7 +158,7 @@ function renderContent({
           ]}
         >
           <Text
-            style={[type.body, tabularNums, { color: theme.textPrimary }]}
+            style={[type.body, tabularNums, { color: ink.textPrimary }]}
           >
             {label}
           </Text>
@@ -173,7 +166,7 @@ function renderContent({
       );
     case "toast":
       if (!toast) return null;
-      return <ToastPill toast={toast} chrome="bare" />;
+      return <ToastPill toast={toast} wrapped={false} />;
     case "hidden":
       return null;
   }
@@ -185,13 +178,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: "center",
-  },
-  pill: {
-    minHeight: 44,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 999,
-    overflow: "hidden",
   },
   row: {
     flexDirection: "row",
