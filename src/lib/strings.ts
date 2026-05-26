@@ -53,14 +53,12 @@ export const strings = {
   pill: {
     shuffleAll: "Shuffle All",
     shuffleAlbum: (title: string) => `Shuffle ${title}`,
-    actions: (n: number) => `Actions · ${n}`,
     shuffleA11y: "Shuffle",
-    actionsA11y: (n: number) => `Actions for ${n} selected`,
-  },
-  actionsSheet: {
-    favoriteAll: "Favorite all",
-    deleteAll: "Delete all",
-    slideshowSelection: (n: number) => `Slideshow these ${n}`,
+    slideshowSelectionA11y: (n: number) =>
+      `Play slideshow of ${n} selected photos`,
+    favoriteSelectionA11y: (n: number) => `Favorite ${n} selected photos`,
+    deleteSelectionA11y: (n: number) => `Delete ${n} selected photos`,
+    shareSelectionA11y: (n: number) => `Share ${n} selected photos`,
   },
   toast: {
     saved: "Saved.",

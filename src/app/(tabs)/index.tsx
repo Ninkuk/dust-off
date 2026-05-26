@@ -3,9 +3,11 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { StyleSheet, View } from "react-native";
 import { useBulkDelete } from "@/actions/use-bulk-delete";
 import { useBulkFavorite } from "@/actions/use-bulk-favorite";
+import { useBulkShare } from "@/actions/use-bulk-share";
 import { useReshuffleGallery } from "@/actions/use-reshuffle-gallery";
 import { useStartSlideshow } from "@/actions/use-start-slideshow";
 import { useStartSlideshowFromSelection } from "@/actions/use-start-slideshow-from-selection";
+import { BottomChromeScrim } from "@/components/bottom-chrome-scrim";
 import { EmptyState } from "@/components/empty-state";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { MorphingPill } from "@/components/morphing-pill";
@@ -16,6 +18,7 @@ import {
   type SourcePickerHandle,
 } from "@/components/source-picker-sheet";
 import { useFirstReveal } from "@/hooks/use-first-reveal";
+import { useSelectionBackHandler } from "@/hooks/use-selection-back-handler";
 import { isPermissionLimited } from "@/lib/permission";
 import { seededShuffle } from "@/lib/seeded-shuffle";
 import { firstParam } from "@/lib/route-params";
@@ -43,9 +46,11 @@ export default function GalleryScreen() {
   const query = useAssetsQuery(SOURCE);
   const permissionQuery = usePermissionQuery();
   const { isFirstReveal, markRevealComplete } = useFirstReveal();
+  useSelectionBackHandler();
 
   const reshuffle = useReshuffleGallery();
   const bulkFavorite = useBulkFavorite();
+  const bulkShare = useBulkShare();
   const bulkDelete = useBulkDelete();
   const startSlideshow = useStartSlideshow();
   const startFromSelection = useStartSlideshowFromSelection();
@@ -86,6 +91,7 @@ export default function GalleryScreen() {
   }, [firstPageReady, markRevealComplete]);
 
   const handleFavoriteAll = () => bulkFavorite([...selectedIds]);
+  const handleShareAll = () => bulkShare([...selectedIds]);
   const handleDeleteAll = () => bulkDelete([...selectedIds]);
   const handleShuffle = () =>
     startSlideshow({ source: "all", assets: allAssets });
@@ -147,10 +153,11 @@ export default function GalleryScreen() {
           onOpenPhoto={handleOpenPhoto}
         />
       )}
+      <BottomChromeScrim />
       <MorphingPill
         scope={{ kind: "all" }}
-        selectionCount={selectedIds.size}
         onFavoriteAll={handleFavoriteAll}
+        onShareAll={handleShareAll}
         onDeleteAll={handleDeleteAll}
         onShuffle={handleShuffle}
         onLongPressShuffle={handleLongPressShuffle}

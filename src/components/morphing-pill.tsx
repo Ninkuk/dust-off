@@ -1,38 +1,65 @@
-import type { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { Sparkle } from "lucide-react-native";
-import { type ReactNode, useRef } from "react";
+import { Heart, Play, Share2, Sparkle, Trash2 } from "lucide-react-native";
+import type { ComponentType, ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, { Easing, Keyframe } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   type PillScope,
   usePillContextLabel,
 } from "@/hooks/use-pill-context-label";
 import { type PillState, usePillState } from "@/hooks/use-pill-state";
-import { heavyTap, selectionTick } from "@/lib/haptics";
+import { heavyTap, mediumTap, selectionTick } from "@/lib/haptics";
+import { strings } from "@/lib/strings";
+import { useSelectionStore } from "@/state/selection-store";
 import { type Toast, useToastStore } from "@/state/toast-store";
-import { ink, tabularNums, type } from "@/theme";
-import { ActionsSheet } from "./actions-sheet";
+import { colors, ink, type } from "@/theme";
+import { shellMotion } from "@/theme/motion";
 import { InkPill } from "./ink-pill";
 import { ToastPill } from "./toast-pill";
 
-// NativeTabs doesn't expose a tab-bar height to JS, so we approximate.
-// Clearance is purely geometric now (the bar is solid ink, no blur stack
-// to preserve). Dial in during dogfooding if the pill floats too high
-// or low above typical iOS/Android tab bars.
-const TAB_BAR_CLEARANCE = 60;
+// Pill hugs the tab bar with a 12pt gap so the chrome reads as a single
+// dock rather than a floating pill orphaned mid-screen. NativeTabs doesn't
+// expose a tab-bar height to JS; insets.bottom covers the tab-bar
+// reservation, and this constant is the breathing room above it.
+const TAB_BAR_CLEARANCE = 12;
+
+// Stagger between circles when the action row enters — keeps the three
+// buttons reading as a ladder rather than a single hard pop.
+const CIRCLE_STAGGER_MS = 50;
+
+const popIn = (delay = 0) =>
+  new Keyframe({
+    0: { opacity: 0, transform: [{ scale: 0.88 }] },
+    100: {
+      opacity: 1,
+      transform: [{ scale: 1 }],
+      easing: Easing.out(Easing.cubic),
+    },
+  })
+    .duration(shellMotion.duration.base)
+    .delay(delay);
+
+const popOut = new Keyframe({
+  0: { opacity: 1, transform: [{ scale: 1 }] },
+  100: {
+    opacity: 0,
+    transform: [{ scale: 0.92 }],
+    easing: Easing.in(Easing.cubic),
+  },
+}).duration(shellMotion.duration.fast);
 
 export function MorphingPill({
   scope,
-  selectionCount,
   onFavoriteAll,
+  onShareAll,
   onDeleteAll,
   onShuffle,
   onLongPressShuffle,
   onSlideshowSelection,
 }: {
   scope: PillScope;
-  selectionCount: number;
   onFavoriteAll: () => void;
+  onShareAll: () => void;
   onDeleteAll: () => void;
   onShuffle: () => void;
   onLongPressShuffle?: () => void;
@@ -42,7 +69,7 @@ export function MorphingPill({
   const state = usePillState();
   const label = usePillContextLabel(scope);
   const toast = useToastStore((s) => s.current);
-  const sheetRef = useRef<BottomSheetModal>(null);
+  const selectionCount = useSelectionStore((s) => s.selectedIds.size);
 
   if (state === "hidden") return null;
 
@@ -58,49 +85,46 @@ export function MorphingPill({
       }
     : undefined;
 
-  const handleActionsPress = () => {
+  const handleSlideshow = onSlideshowSelection
+    ? () => {
+        selectionTick();
+        onSlideshowSelection();
+      }
+    : undefined;
+
+  const handleFavorite = () => {
     selectionTick();
-    sheetRef.current?.present();
+    onFavoriteAll();
   };
 
-  const wrapDismiss = (action: () => void) => () => {
-    sheetRef.current?.dismiss();
-    action();
+  const handleShare = () => {
+    selectionTick();
+    onShareAll();
+  };
+
+  const handleDelete = () => {
+    mediumTap();
+    onDeleteAll();
   };
 
   return (
-    <>
-      <View
-        pointerEvents="box-none"
-        style={[
-          styles.wrapper,
-          { bottom: insets.bottom + TAB_BAR_CLEARANCE },
-        ]}
-      >
-        <InkPill size="pill">
-          {renderContent({
-            state,
-            label,
-            toast,
-            onShuffle: handleShufflePress,
-            onShuffleLongPress: handleShuffleLongPress,
-            onActions: handleActionsPress,
-          })}
-        </InkPill>
-      </View>
-
-      <ActionsSheet
-        ref={sheetRef}
-        selectionCount={selectionCount}
-        onFavoriteAll={wrapDismiss(onFavoriteAll)}
-        onDeleteAll={wrapDismiss(onDeleteAll)}
-        onSlideshowSelection={
-          onSlideshowSelection
-            ? wrapDismiss(onSlideshowSelection)
-            : undefined
-        }
-      />
-    </>
+    <View
+      pointerEvents="box-none"
+      style={[styles.wrapper, { bottom: insets.bottom + TAB_BAR_CLEARANCE }]}
+    >
+      {renderContent({
+        state,
+        label,
+        toast,
+        selectionCount,
+        onShuffle: handleShufflePress,
+        onShuffleLongPress: handleShuffleLongPress,
+        onSlideshow: handleSlideshow,
+        onFavorite: handleFavorite,
+        onShare: handleShare,
+        onDelete: handleDelete,
+      })}
+    </View>
   );
 }
 
@@ -108,68 +132,139 @@ function renderContent({
   state,
   label,
   toast,
+  selectionCount,
   onShuffle,
   onShuffleLongPress,
-  onActions,
+  onSlideshow,
+  onFavorite,
+  onShare,
+  onDelete,
 }: {
   state: PillState;
   label: string;
   toast: Toast | null;
+  selectionCount: number;
   onShuffle: () => void;
   onShuffleLongPress: (() => void) | undefined;
-  onActions: () => void;
+  onSlideshow: (() => void) | undefined;
+  onFavorite: () => void;
+  onShare: () => void;
+  onDelete: () => void;
 }): ReactNode {
   switch (state) {
     case "shuffle":
       return (
-        <Pressable
-          onPress={onShuffle}
-          onLongPress={onShuffleLongPress}
-          delayLongPress={450}
-          accessibilityRole="button"
-          accessibilityLabel={label}
-          hitSlop={8}
-          style={({ pressed }) => [
-            styles.row,
-            { opacity: pressed ? 0.7 : 1 },
-          ]}
-        >
-          <Sparkle
-            size={16}
-            strokeWidth={2}
-            color={ink.textPrimary}
-            style={styles.icon}
-          />
-          <Text style={[type.body, { color: ink.textPrimary }]}>
-            {label}
-          </Text>
-        </Pressable>
+        <Animated.View entering={popIn()} exiting={popOut}>
+          <InkPill size="pill" tone="accent">
+            <Pressable
+              onPress={onShuffle}
+              onLongPress={onShuffleLongPress}
+              delayLongPress={450}
+              accessibilityRole="button"
+              accessibilityLabel={label}
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.row,
+                { opacity: pressed ? 0.7 : 1 },
+              ]}
+            >
+              <Sparkle
+                size={16}
+                strokeWidth={2}
+                color={colors.text.onLight}
+                style={styles.icon}
+              />
+              <Text style={[type.body, { color: colors.text.onLight }]}>
+                {label}
+              </Text>
+            </Pressable>
+          </InkPill>
+        </Animated.View>
       );
-    case "actions":
+    case "actions": {
+      // Stagger index pegged to render order: Slideshow (if present), Heart,
+      // Share, Trash. Each circle's enter delay = staggerIndex * CIRCLE_STAGGER_MS.
+      let i = 0;
       return (
-        <Pressable
-          onPress={onActions}
-          accessibilityRole="button"
-          accessibilityLabel={label}
-          hitSlop={8}
-          style={({ pressed }) => [
-            styles.row,
-            { opacity: pressed ? 0.7 : 1 },
-          ]}
-        >
-          <Text
-            style={[type.body, tabularNums, { color: ink.textPrimary }]}
-          >
-            {label}
-          </Text>
-        </Pressable>
+        <View style={styles.actionRow}>
+          {onSlideshow ? (
+            <CircleAction
+              icon={Play}
+              onPress={onSlideshow}
+              accessibilityLabel={strings.pill.slideshowSelectionA11y(
+                selectionCount,
+              )}
+              enterDelay={i++ * CIRCLE_STAGGER_MS}
+            />
+          ) : null}
+          <CircleAction
+            icon={Heart}
+            onPress={onFavorite}
+            color={ink.accent}
+            accessibilityLabel={strings.pill.favoriteSelectionA11y(
+              selectionCount,
+            )}
+            enterDelay={i++ * CIRCLE_STAGGER_MS}
+          />
+          <CircleAction
+            icon={Share2}
+            onPress={onShare}
+            accessibilityLabel={strings.pill.shareSelectionA11y(
+              selectionCount,
+            )}
+            enterDelay={i++ * CIRCLE_STAGGER_MS}
+          />
+          <CircleAction
+            icon={Trash2}
+            onPress={onDelete}
+            color={ink.danger}
+            accessibilityLabel={strings.pill.deleteSelectionA11y(
+              selectionCount,
+            )}
+            enterDelay={i++ * CIRCLE_STAGGER_MS}
+          />
+        </View>
       );
+    }
     case "toast":
       if (!toast) return null;
-      return <ToastPill toast={toast} wrapped={false} />;
+      return (
+        <Animated.View entering={popIn()} exiting={popOut}>
+          <ToastPill toast={toast} />
+        </Animated.View>
+      );
     case "hidden":
       return null;
   }
+}
+
+function CircleAction({
+  icon: Icon,
+  onPress,
+  accessibilityLabel,
+  color = ink.textPrimary,
+  enterDelay = 0,
+}: {
+  icon: ComponentType<{ size: number; strokeWidth: number; color: string }>;
+  onPress: () => void;
+  accessibilityLabel: string;
+  color?: string;
+  enterDelay?: number;
+}) {
+  return (
+    <Animated.View entering={popIn(enterDelay)} exiting={popOut}>
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+      >
+        <InkPill size="circle">
+          <Icon size={20} strokeWidth={2} color={color} />
+        </InkPill>
+      </Pressable>
+    </Animated.View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -186,5 +281,10 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 8,
+  },
+  actionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
   },
 });
