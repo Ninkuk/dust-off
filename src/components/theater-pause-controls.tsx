@@ -1,4 +1,4 @@
-import { FolderOpen, Heart, Info, Trash2 } from "lucide-react-native";
+import { FolderOpen, Heart, Info, Share2, Trash2 } from "lucide-react-native";
 import { useEffect } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
@@ -20,6 +20,7 @@ type Props = {
   hasAlbum: boolean;
   onFavorite: () => void;
   onUnfavorite: () => void;
+  onShare: () => void;
   onDelete: () => void;
   onShowInfo: () => void;
   onGoToFolder: () => void;
@@ -30,6 +31,7 @@ export function TheaterPauseControls({
   hasAlbum,
   onFavorite,
   onUnfavorite,
+  onShare,
   onDelete,
   onShowInfo,
   onGoToFolder,
@@ -63,15 +65,22 @@ export function TheaterPauseControls({
           <Heart
             size={ICON_SIZE}
             strokeWidth={STROKE}
+            color={theme.accent}
+            fill={isFavorited ? theme.accent : "transparent"}
+          />
+        </IconButton>
+        <IconButton label={m.share} onPress={onShare}>
+          <Share2
+            size={ICON_SIZE}
+            strokeWidth={STROKE}
             color={theme.textPrimary}
-            fill={isFavorited ? theme.textPrimary : "transparent"}
           />
         </IconButton>
         <IconButton label={m.delete} onPress={onDelete}>
           <Trash2
             size={ICON_SIZE}
             strokeWidth={STROKE}
-            color={theme.accent}
+            color={theme.danger}
           />
         </IconButton>
         <IconButton label={m.info} onPress={onShowInfo}>

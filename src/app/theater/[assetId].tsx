@@ -9,6 +9,7 @@ import {
   useFavoritePhoto,
   useUnfavoritePhoto,
 } from "@/actions/use-favorite-photo";
+import { useSharePhoto } from "@/actions/use-share-photo";
 import { GestureGuideOverlay } from "@/components/gesture-guide-overlay";
 import { LongPressRing } from "@/components/long-press-ring";
 import { PhotoInfoSheet } from "@/components/photo-info-sheet";
@@ -198,6 +199,7 @@ export default function TheaterScreen() {
 
   const favoritePhoto = useFavoritePhoto();
   const unfavoritePhoto = useUnfavoritePhoto();
+  const sharePhoto = useSharePhoto();
   const deletePhoto = useDeletePhoto();
 
   // Coordinator hooks: keep-awake while playing + AppState-pause on background
@@ -324,6 +326,7 @@ export default function TheaterScreen() {
         hasAlbum={!!current.albumId}
         onFavorite={() => favoritePhoto(current.id)}
         onUnfavorite={() => unfavoritePhoto(current.id)}
+        onShare={() => sharePhoto(current.id)}
         onDelete={() =>
           deletePhoto(current.id, () => skipUnavailable(current.id))
         }
@@ -337,6 +340,7 @@ export default function TheaterScreen() {
         hasAlbum={!!current.albumId}
         onFavorite={wrapDismissMenu(() => favoritePhoto(current.id))}
         onUnfavorite={wrapDismissMenu(() => unfavoritePhoto(current.id))}
+        onShare={wrapDismissMenu(() => sharePhoto(current.id))}
         onDelete={wrapDismissMenu(() =>
           deletePhoto(current.id, () => skipUnavailable(current.id)),
         )}

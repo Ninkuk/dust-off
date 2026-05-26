@@ -67,6 +67,7 @@ export const strings = {
     undo: "Undo",
     gone: "Gone.",
     reshuffled: "Reshuffled.",
+    shareFailed: "Couldn't share.",
   },
   deleteConfirm: {
     titleSingle: "Delete photo?",
@@ -94,6 +95,7 @@ export const strings = {
     longPressMenu: {
       favorite: "Favorite",
       unfavorite: "Unfavorite",
+      share: "Share",
       delete: "Delete",
       info: "View Info",
       goToFolder: "Go to Folder",

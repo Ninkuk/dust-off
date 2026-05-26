@@ -12,6 +12,7 @@ type Props = {
   // morphing-pill.tsx's wrapDismiss pattern.
   onFavorite: () => void;
   onUnfavorite: () => void;
+  onShare: () => void;
   onDelete: () => void;
   onShowInfo: () => void;
   onGoToFolder: () => void;
@@ -25,6 +26,7 @@ export const TheaterLongPressMenu = forwardRef<BottomSheetModal, Props>(
       hasAlbum,
       onFavorite,
       onUnfavorite,
+      onShare,
       onDelete,
       onShowInfo,
       onGoToFolder,
@@ -40,6 +42,7 @@ export const TheaterLongPressMenu = forwardRef<BottomSheetModal, Props>(
             label={isFavorited ? m.unfavorite : m.favorite}
             onPress={isFavorited ? onUnfavorite : onFavorite}
           />
+          <SheetRow label={m.share} onPress={onShare} />
           <SheetRow label={m.delete} tone="destructive" onPress={onDelete} />
           <SheetRow label={m.info} onPress={onShowInfo} />
           <SheetRow
