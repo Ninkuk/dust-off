@@ -55,8 +55,16 @@
         "expo-media-library",
         {
           "photosPermission": "Dust Off displays and shuffles photos from your library. Nothing leaves your device.",
-          "isAccessMediaLocationEnabled": false,
+          "isAccessMediaLocationEnabled": true,
           "preventAutomaticLimitedAccessAlert": true
+        }
+      ],
+      "expo-sharing",
+      [
+        "react-native-share",
+        {
+          "ios": [],
+          "android": []
         }
       ]
     ],
