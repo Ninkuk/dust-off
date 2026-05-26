@@ -139,7 +139,6 @@ export default function AlbumGalleryScreen() {
         selectionCount={selectedIds.size}
         onCancel={cancelSelection}
         onBack={handleBack}
-        title={albumTitle || undefined}
       />
       {!ready ? null : sortedAssets.length === 0 ? (
         <EmptyState title={strings.emptyStates.nothingYet} />

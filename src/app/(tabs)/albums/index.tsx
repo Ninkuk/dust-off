@@ -1,12 +1,13 @@
 import { useRouter } from "expo-router";
 import type { Album } from "expo-media-library";
 import { useMemo } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AlbumsGrid, type AlbumsGridItem } from "@/components/albums-grid";
 import { PartialAccessBanner } from "@/components/partial-access-banner";
 import { isPermissionLimited } from "@/lib/permission";
 import { FAVORITES_ALBUM_ID } from "@/lib/source-set";
+import { strings } from "@/lib/strings";
 import {
   useAssetsQuery,
   usePrefetchAllAssetPages,
@@ -16,7 +17,7 @@ import { usePermissionQuery } from "@/queries/use-permission-query";
 import { useAlbumsQuery } from "@/queries/use-albums-query";
 import { useFavoritesStore } from "@/state/favorites-store";
 import { useGalleryStore } from "@/state/gallery-store";
-import { useTheme } from "@/theme";
+import { type, useTheme } from "@/theme";
 
 const ALL_SOURCE: AlbumOrAllSource = { kind: "all" };
 
@@ -55,9 +56,15 @@ export default function AlbumsScreen() {
     <View
       style={[
         styles.root,
-        { backgroundColor: theme.surface, paddingTop: insets.top + 8 },
+        { backgroundColor: theme.surface, paddingTop: insets.top + 16 },
       ]}
     >
+      <Text
+        accessibilityRole="header"
+        style={[type.display, styles.title, { color: theme.textPrimary }]}
+      >
+        {strings.tabs.albums}
+      </Text>
       {limited ? (
         <PartialAccessBanner shared={sharedCount} total={sharedCount} />
       ) : null}
@@ -83,4 +90,8 @@ export default function AlbumsScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  title: {
+    paddingHorizontal: 24,
+    marginBottom: 24,
+  },
 });
