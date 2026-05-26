@@ -11,6 +11,7 @@ export const colors = {
   accent: {
     warm: "#F5C77E",
   },
+  danger: "#FF453A",
 } as const;
 
 export type Zone = "shell" | "theater";
@@ -19,6 +20,7 @@ export type Theme = {
   surface: string;
   textPrimary: string;
   accent: string;
+  danger: string;
   isDark: boolean;
   zone: Zone;
 };
@@ -27,6 +29,7 @@ export const lightTheme: Theme = {
   surface: colors.surface.shellLight,
   textPrimary: colors.text.onLight,
   accent: colors.accent.warm,
+  danger: colors.danger,
   isDark: false,
   zone: "shell",
 };
@@ -35,6 +38,7 @@ export const darkShellTheme: Theme = {
   surface: colors.surface.shellDark,
   textPrimary: colors.text.onDark,
   accent: colors.accent.warm,
+  danger: colors.danger,
   isDark: true,
   zone: "shell",
 };
@@ -43,6 +47,7 @@ export const theaterTheme: Theme = {
   surface: colors.surface.theater,
   textPrimary: colors.text.onDark,
   accent: colors.accent.warm,
+  danger: colors.danger,
   isDark: true,
   zone: "theater",
 };
@@ -57,4 +62,5 @@ export const ink = {
   textPrimary: "#F2F2F2",
   textMuted: "rgba(242,242,242,0.55)",
   accent: "#F5C77E",
+  danger: "#FF453A",
 } as const;

@@ -15,7 +15,7 @@ export function SheetRow({
   disabled?: boolean;
 }) {
   const theme = useTheme();
-  const color = tone === "destructive" ? theme.accent : theme.textPrimary;
+  const color = tone === "destructive" ? theme.danger : theme.textPrimary;
 
   return (
     <Pressable
