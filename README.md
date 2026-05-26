@@ -6,8 +6,6 @@ A randomized photo gallery and slideshow for iOS and Android. Surfaces the photo
 
 Most people have thousands of photos sitting on their phone they never scroll back through. Dust Off's wedge is _serendipitous rediscovery_: random-by-default sort plus a dedicated, gesture-first slideshow tuned for libraries of 5k–50k photos.
 
-This is a hobby project, not a launch. The product spec — including locked design system and state-architecture decisions — lives in [`docs/PRD.md`](docs/PRD.md).
-
 ## Stack
 
 - Expo SDK 55 + Expo Router 55 (typed routes, file-based routing)
@@ -34,7 +32,7 @@ There is no test runner configured.
 
 ## Privacy posture
 
-Privacy is architectural, not optional. Per PRD requirements P-1 through P-5:
+Privacy is architectural, not optional.
 
 - No network calls during normal usage (verified by airplane-mode test)
 - No telemetry, analytics, or crash reporting SDKs in the binary
@@ -42,10 +40,6 @@ Privacy is architectural, not optional. Per PRD requirements P-1 through P-5:
 - All preferences stored locally; photo metadata never leaves the device
 
 Adding a dependency that violates any of these requires replacing or wrapping it.
-
-## Build status
-
-Phase 1 (permission + onboarding flow) is complete. Phases 2 (gallery walking skeleton — paginated MediaLibrary fetch, FlashList grid, sort sheet, persisted preferences, first-reveal stagger), 3 (Albums view + favorites — drill-in, synthesized Favorites pinned first, per-session random covers), 4 (selection mode + bulk actions — long-press drag-extend, morphing pill, bulk favorite/delete, pull-to-shuffle), 5 (photo viewer "theater" — paused state with tap-zones, pinch+pan, swipe-down dismiss, double-tap favorite, long-press menu, EXIF info sheet), and 6 (slideshow engine — autoplay queue with cross-fade, hairline progress bar, keep-awake while playing, AppState pause without auto-resume, silent skip on missing/failed assets, silent reshuffle at queue exhaustion, pause-on-pinch) are landed; on-device walkthroughs pending. Phase 5 flipped from `@nandorojo/galeria` to a custom Reanimated swiper after DS-12 reconciliation found the lightbox model incompatible with the bespoke gesture set. Phase 7 (source picker, shake-to-shuffle, gesture-guide overlay, "Slideshow these N" from selection) is up next. Phase progression and exit gates live in [`docs/PRD.md`](docs/PRD.md); `CLAUDE.md` carries the running architectural picture.
 
 ## Repository map
 
@@ -57,9 +51,6 @@ Phase 1 (permission + onboarding flow) is complete. Phases 2 (gallery walking sk
 - `src/hooks/` — React hooks (splash gate, grid columns, first-reveal, app-state refetch)
 - `src/components/` — UI primitives (Button, EmptyState, GalleryGrid, SortStrip, Sheet, etc.)
 - `src/lib/` — adapters and helpers (async-storage, media-library wrapper, seeded-shuffle, permission, source-set, strings)
-- `docs/PRD.md` — product requirements + locked design and state decisions (source of truth)
-- `docs/perf-rig.md`, `docs/perf-baseline-phase0.md` — perf measurement infrastructure (rig in place, runs deferred)
-- `CLAUDE.md` — guidance for AI-assisted development on this codebase
 
 Path aliases: `@/*` → `./src/*` and `@/assets/*` → `./assets/*`. Always import via aliases.
 
