@@ -139,4 +139,59 @@ export const strings = {
       useAllPhotos: "Use All Photos",
     },
   },
+  settings: {
+    title: "Settings",
+    sections: {
+      library: "LIBRARY",
+      slideshow: "SLIDESHOW",
+      interaction: "INTERACTION",
+      display: "DISPLAY",
+      about: "ABOUT",
+    },
+    rows: {
+      source: "Source",
+      includeIcloud: "Include iCloud albums",
+      defaultSort: "Default sort",
+      gridSize: "Grid size",
+      duration: "Duration",
+      transition: "Transition",
+      shakeSensitivity: "Shake sensitivity",
+      visibleButtonMode: "Visible button mode",
+      reduceMotion: "Reduce motion",
+      version: "Version",
+      replayOnboarding: "Replay onboarding",
+      acknowledgements: "Acknowledgements",
+    },
+    sourceLabels: {
+      all: "All Photos",
+      favorites: "Favorites",
+      album: "One album",
+      union: "Multiple",
+    },
+    gridSizeLabels: {
+      compact: "Compact",
+      comfortable: "Comfortable",
+      large: "Large",
+    },
+    slideTransitionLabels: {
+      "cross-fade": "Cross-fade",
+      "hard-cut": "Hard cut",
+    },
+    shakeSensitivityLabels: {
+      off: "Off",
+      low: "Low",
+      medium: "Medium",
+      high: "High",
+    },
+    reduceMotionLabels: {
+      auto: "Automatic",
+      on: "Always on",
+      off: "Always off",
+    },
+    slideDurationLabel: (sec: number) =>
+      sec === 1 ? "1 second" : `${sec} seconds`,
+    acknowledgementsTitle: "Acknowledgements",
+    acknowledgementsIntro:
+      "Dust Off is built on the shoulders of these open-source projects.",
+  },
 } as const;
