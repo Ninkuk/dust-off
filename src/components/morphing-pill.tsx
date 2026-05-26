@@ -1,4 +1,4 @@
-import { Heart, Play, Share2, Sparkle, Trash2 } from "lucide-react-native";
+import { Dices, Heart, Play, Share2, Trash2 } from "lucide-react-native";
 import type { ComponentType, ReactNode } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { Easing, Keyframe } from "react-native-reanimated";
@@ -168,7 +168,7 @@ function renderContent({
                 { opacity: pressed ? 0.7 : 1 },
               ]}
             >
-              <Sparkle
+              <Dices
                 size={16}
                 strokeWidth={2}
                 color={colors.text.onLight}
