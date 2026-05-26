@@ -52,12 +52,11 @@ export const theaterTheme: Theme = {
   zone: "theater",
 };
 
-// Editorial Ink — fixed dark chrome for floating UI (pill, toast, chip,
-// tab bar). Deliberately not part of Theme: identity consistency means
-// these values are the same regardless of system light/dark.
+// Editorial Ink — fixed dark chrome for floating UI (pill, toast, chip).
+// Deliberately not part of Theme: identity consistency means these values
+// are the same regardless of system light/dark.
 export const ink = {
   surface: "#111111",
-  surfaceTabBar: "#0A0A0A",
   hairline: "rgba(255,255,255,0.08)",
   textPrimary: "#F2F2F2",
   textMuted: "rgba(242,242,242,0.55)",
