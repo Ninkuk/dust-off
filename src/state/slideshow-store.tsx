@@ -38,7 +38,7 @@ export type SlideshowActions = {
   skipUnavailable: (id: string) => void;
   // Re-orders the queue with a fresh seed and resets to index 0. Works
   // whether playing or paused; never auto-resumes (D-9). Caller owns the
-  // haptic. Powers shake-to-shuffle (S-13).
+  // haptic.
   reshuffle: () => void;
 };
 

@@ -8,7 +8,6 @@ import { GridSizeSheet } from "@/components/grid-size-sheet";
 import { ReduceMotionSheet } from "@/components/reduce-motion-sheet";
 import { SettingsRow } from "@/components/settings-row";
 import { SettingsSection } from "@/components/settings-section";
-import { ShakeSensitivitySheet } from "@/components/shake-sensitivity-sheet";
 import { SlideDurationSheet } from "@/components/slide-duration-sheet";
 import { SlideTransitionSheet } from "@/components/slide-transition-sheet";
 import { SortSheet } from "@/components/sort-sheet";
@@ -30,7 +29,6 @@ export default function SettingsScreen() {
   const gridSheetRef = useRef<BottomSheetModal>(null);
   const durationSheetRef = useRef<BottomSheetModal>(null);
   const transitionSheetRef = useRef<BottomSheetModal>(null);
-  const shakeSheetRef = useRef<BottomSheetModal>(null);
   const motionSheetRef = useRef<BottomSheetModal>(null);
 
   const defaultSource = usePreferencesStore((s) => s.defaultSource);
@@ -38,7 +36,6 @@ export default function SettingsScreen() {
   const gridSize = usePreferencesStore((s) => s.gridSize);
   const slideDurationSec = usePreferencesStore((s) => s.slideDurationSec);
   const slideTransition = usePreferencesStore((s) => s.slideTransition);
-  const shakeSensitivity = usePreferencesStore((s) => s.shakeSensitivity);
   const visibleButtonMode = usePreferencesStore((s) => s.visibleButtonMode);
   const includeICloud = usePreferencesStore((s) => s.includeICloud);
   const reduceMotionOverride = usePreferencesStore(
@@ -113,11 +110,6 @@ export default function SettingsScreen() {
 
         <SettingsSection title={strings.settings.sections.interaction}>
           <SettingsRow
-            label={strings.settings.rows.shakeSensitivity}
-            value={strings.settings.shakeSensitivityLabels[shakeSensitivity]}
-            onPress={() => shakeSheetRef.current?.present()}
-          />
-          <SettingsRow
             label={strings.settings.rows.visibleButtonMode}
             rightSlot={
               <Switch
@@ -155,7 +147,6 @@ export default function SettingsScreen() {
       <GridSizeSheet ref={gridSheetRef} />
       <SlideDurationSheet ref={durationSheetRef} />
       <SlideTransitionSheet ref={transitionSheetRef} />
-      <ShakeSensitivitySheet ref={shakeSheetRef} />
       <ReduceMotionSheet ref={motionSheetRef} />
     </View>
   );

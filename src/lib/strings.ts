@@ -127,12 +127,11 @@ export const strings = {
       resolving: "Resolving…",
     },
     gestureGuide: {
-      shake: "Shake",
       doubleTap: "Double-tap to favorite",
       swipeHint: "Swipe to navigate",
       gotIt: "Got it",
       a11y:
-        "Slideshow gestures: tap to play, swipe to navigate, shake to reshuffle, double-tap to favorite. Tap anywhere to dismiss.",
+        "Slideshow gestures: tap to play, swipe to navigate, double-tap to favorite. Tap anywhere to dismiss.",
     },
     empty: {
       adjust: "Adjust sources",
@@ -155,7 +154,6 @@ export const strings = {
       gridSize: "Grid size",
       duration: "Duration",
       transition: "Transition",
-      shakeSensitivity: "Shake sensitivity",
       visibleButtonMode: "Visible button mode",
       reduceMotion: "Reduce motion",
       version: "Version",
@@ -176,12 +174,6 @@ export const strings = {
     slideTransitionLabels: {
       "cross-fade": "Cross-fade",
       "hard-cut": "Hard cut",
-    },
-    shakeSensitivityLabels: {
-      off: "Off",
-      low: "Low",
-      medium: "Medium",
-      high: "High",
     },
     reduceMotionLabels: {
       auto: "Automatic",

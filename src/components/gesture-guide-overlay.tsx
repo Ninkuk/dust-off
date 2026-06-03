@@ -98,14 +98,6 @@ export function GestureGuideOverlay({ onDismiss }: { onDismiss: () => void }) {
         ]}
       />
 
-      {/* Top-center chip: ⚡ Shake */}
-      <View
-        style={[styles.topChipWrap, { paddingTop: insets.top + 24 }]}
-        pointerEvents="none"
-      >
-        <Chip label={`⚡ ${strings.theater.gestureGuide.shake}`} />
-      </View>
-
       {/* Three pulsing dots: ‹ ‖ › across left/center/right thirds */}
       <View style={styles.dotsRow} pointerEvents="none">
         <Animated.Text
@@ -174,13 +166,6 @@ function Chip({ label }: { label: string }) {
 const GHOST_SIZE = 24;
 
 const styles = StyleSheet.create({
-  topChipWrap: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-  },
   bottomChipWrap: {
     position: "absolute",
     bottom: 0,

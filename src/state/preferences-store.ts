@@ -6,7 +6,6 @@ import type { PersistableSourceSet } from "@/lib/source-set";
 export type SortMode = "random" | "newest" | "oldest" | "name";
 export type GridSize = "compact" | "comfortable" | "large";
 export type SlideTransition = "cross-fade" | "hard-cut";
-export type ShakeSensitivity = "off" | "low" | "medium" | "high";
 export type ReduceMotionOverride = "auto" | "on" | "off";
 
 export type Preferences = {
@@ -15,7 +14,6 @@ export type Preferences = {
   seenSlideshowGuide: boolean;
   slideDurationSec: number;
   slideTransition: SlideTransition;
-  shakeSensitivity: ShakeSensitivity;
   visibleButtonMode: boolean;
   includeICloud: boolean;
   defaultSort: SortMode;
@@ -38,7 +36,6 @@ const defaults: Preferences = {
   seenSlideshowGuide: false,
   slideDurationSec: 8,
   slideTransition: "cross-fade",
-  shakeSensitivity: "medium",
   visibleButtonMode: false,
   includeICloud: false,
   defaultSort: "random",
