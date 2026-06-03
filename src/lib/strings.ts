@@ -141,24 +141,27 @@ export const strings = {
   settings: {
     title: "Settings",
     sections: {
+      appearance: "APPEARANCE",
       library: "LIBRARY",
       slideshow: "SLIDESHOW",
-      interaction: "INTERACTION",
-      display: "DISPLAY",
       about: "ABOUT",
     },
     rows: {
+      theme: "Theme",
       source: "Source",
       includeIcloud: "Include iCloud albums",
       defaultSort: "Default sort",
       gridSize: "Grid size",
       duration: "Duration",
       transition: "Transition",
-      visibleButtonMode: "Visible button mode",
-      reduceMotion: "Reduce motion",
       version: "Version",
       replayOnboarding: "Replay onboarding",
       acknowledgements: "Acknowledgements",
+    },
+    themeModeLabels: {
+      auto: "Automatic",
+      light: "Light",
+      dark: "Dark",
     },
     sourceLabels: {
       all: "All Photos",
@@ -174,11 +177,6 @@ export const strings = {
     slideTransitionLabels: {
       "cross-fade": "Cross-fade",
       "hard-cut": "Hard cut",
-    },
-    reduceMotionLabels: {
-      auto: "Automatic",
-      on: "Always on",
-      off: "Always off",
     },
     slideDurationLabel: (sec: number) =>
       sec === 1 ? "1 second" : `${sec} seconds`,

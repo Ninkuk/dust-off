@@ -23,7 +23,7 @@ import { Button } from "./button";
 import { InkPill } from "./ink-pill";
 
 // DS-19 first-slideshow gesture guide. Translucent dark scrim + animated
-// hints. Dismisses on first tap or `Got it`. Reduce Motion gating is Phase 8.
+// hints. Dismisses on first tap or `Got it`.
 const SCRIM_FADE_IN_MS = 400;
 const SCRIM_FADE_IN_DELAY_MS = 400;
 const SCRIM_OPACITY = 0.7;

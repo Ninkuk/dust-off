@@ -6,20 +6,19 @@ import type { PersistableSourceSet } from "@/lib/source-set";
 export type SortMode = "random" | "newest" | "oldest" | "name";
 export type GridSize = "compact" | "comfortable" | "large";
 export type SlideTransition = "cross-fade" | "hard-cut";
-export type ReduceMotionOverride = "auto" | "on" | "off";
+export type ThemeMode = "auto" | "light" | "dark";
 
 export type Preferences = {
   hasSeenOnboarding: boolean;
   hasSeenFirstReveal: boolean;
   seenSlideshowGuide: boolean;
+  themeMode: ThemeMode;
   slideDurationSec: number;
   slideTransition: SlideTransition;
-  visibleButtonMode: boolean;
   includeICloud: boolean;
   defaultSort: SortMode;
   gridSize: GridSize;
   defaultSource: PersistableSourceSet;
-  reduceMotionOverride: ReduceMotionOverride;
 };
 
 type PreferencesActions = {
@@ -34,14 +33,13 @@ const defaults: Preferences = {
   hasSeenOnboarding: false,
   hasSeenFirstReveal: false,
   seenSlideshowGuide: false,
+  themeMode: "auto",
   slideDurationSec: 8,
   slideTransition: "cross-fade",
-  visibleButtonMode: false,
   includeICloud: false,
   defaultSort: "random",
   gridSize: "comfortable",
   defaultSource: { kind: "all" },
-  reduceMotionOverride: "auto",
 };
 
 export const usePreferencesStore = create<Preferences & PreferencesActions>()(

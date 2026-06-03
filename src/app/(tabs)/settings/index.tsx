@@ -5,7 +5,6 @@ import { useRef } from "react";
 import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GridSizeSheet } from "@/components/grid-size-sheet";
-import { ReduceMotionSheet } from "@/components/reduce-motion-sheet";
 import { SettingsRow } from "@/components/settings-row";
 import { SettingsSection } from "@/components/settings-section";
 import { SlideDurationSheet } from "@/components/slide-duration-sheet";
@@ -15,6 +14,7 @@ import {
   SourcePickerSheet,
   type SourcePickerHandle,
 } from "@/components/source-picker-sheet";
+import { ThemeModeSheet } from "@/components/theme-mode-sheet";
 import type { PersistableSourceSet } from "@/lib/source-set";
 import { strings } from "@/lib/strings";
 import { usePreferencesStore } from "@/state/preferences-store";
@@ -24,23 +24,20 @@ export default function SettingsScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
 
+  const themeSheetRef = useRef<BottomSheetModal>(null);
   const sortSheetRef = useRef<BottomSheetModal>(null);
   const sourceSheetRef = useRef<SourcePickerHandle>(null);
   const gridSheetRef = useRef<BottomSheetModal>(null);
   const durationSheetRef = useRef<BottomSheetModal>(null);
   const transitionSheetRef = useRef<BottomSheetModal>(null);
-  const motionSheetRef = useRef<BottomSheetModal>(null);
 
+  const themeMode = usePreferencesStore((s) => s.themeMode);
   const defaultSource = usePreferencesStore((s) => s.defaultSource);
   const defaultSort = usePreferencesStore((s) => s.defaultSort);
   const gridSize = usePreferencesStore((s) => s.gridSize);
   const slideDurationSec = usePreferencesStore((s) => s.slideDurationSec);
   const slideTransition = usePreferencesStore((s) => s.slideTransition);
-  const visibleButtonMode = usePreferencesStore((s) => s.visibleButtonMode);
   const includeICloud = usePreferencesStore((s) => s.includeICloud);
-  const reduceMotionOverride = usePreferencesStore(
-    (s) => s.reduceMotionOverride,
-  );
   const setPreference = usePreferencesStore((s) => s.setPreference);
   const resetFlags = usePreferencesStore((s) => s.resetFlags);
 
@@ -66,6 +63,14 @@ export default function SettingsScreen() {
         >
           {strings.settings.title}
         </Text>
+
+        <SettingsSection title={strings.settings.sections.appearance}>
+          <SettingsRow
+            label={strings.settings.rows.theme}
+            value={strings.settings.themeModeLabels[themeMode]}
+            onPress={() => themeSheetRef.current?.present()}
+          />
+        </SettingsSection>
 
         <SettingsSection title={strings.settings.sections.library}>
           <SettingsRow
@@ -108,27 +113,6 @@ export default function SettingsScreen() {
           />
         </SettingsSection>
 
-        <SettingsSection title={strings.settings.sections.interaction}>
-          <SettingsRow
-            label={strings.settings.rows.visibleButtonMode}
-            rightSlot={
-              <Switch
-                value={visibleButtonMode}
-                onValueChange={(v) => setPreference("visibleButtonMode", v)}
-                trackColor={{ true: theme.accent, false: undefined }}
-              />
-            }
-          />
-        </SettingsSection>
-
-        <SettingsSection title={strings.settings.sections.display}>
-          <SettingsRow
-            label={strings.settings.rows.reduceMotion}
-            value={strings.settings.reduceMotionLabels[reduceMotionOverride]}
-            onPress={() => motionSheetRef.current?.present()}
-          />
-        </SettingsSection>
-
         <SettingsSection title={strings.settings.sections.about}>
           <SettingsRow label={strings.settings.rows.version} value={version} />
           <SettingsRow
@@ -142,12 +126,12 @@ export default function SettingsScreen() {
         </SettingsSection>
       </ScrollView>
 
+      <ThemeModeSheet ref={themeSheetRef} />
       <SortSheet ref={sortSheetRef} />
       <SourcePickerSheet ref={sourceSheetRef} />
       <GridSizeSheet ref={gridSheetRef} />
       <SlideDurationSheet ref={durationSheetRef} />
       <SlideTransitionSheet ref={transitionSheetRef} />
-      <ReduceMotionSheet ref={motionSheetRef} />
     </View>
   );
 }

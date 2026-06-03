@@ -3,23 +3,20 @@ import { Check } from "lucide-react-native";
 import { forwardRef } from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
 import { strings } from "@/lib/strings";
-import {
-  type ReduceMotionOverride,
-  usePreferencesStore,
-} from "@/state/preferences-store";
+import { type ThemeMode, usePreferencesStore } from "@/state/preferences-store";
 import { type, useTheme } from "@/theme";
 import { Sheet } from "./sheet";
 
-const MODES: readonly ReduceMotionOverride[] = ["auto", "on", "off"];
+const MODES: readonly ThemeMode[] = ["auto", "light", "dark"];
 
-export const ReduceMotionSheet = forwardRef<BottomSheetModal>(
-  function ReduceMotionSheet(_props, ref) {
+export const ThemeModeSheet = forwardRef<BottomSheetModal>(
+  function ThemeModeSheet(_props, ref) {
     const theme = useTheme();
-    const current = usePreferencesStore((s) => s.reduceMotionOverride);
+    const current = usePreferencesStore((s) => s.themeMode);
     const setPreference = usePreferencesStore((s) => s.setPreference);
 
-    const select = (value: ReduceMotionOverride) => {
-      setPreference("reduceMotionOverride", value);
+    const select = (value: ThemeMode) => {
+      setPreference("themeMode", value);
       if (typeof ref === "object" && ref?.current) {
         ref.current.dismiss();
       }
@@ -37,11 +34,11 @@ export const ReduceMotionSheet = forwardRef<BottomSheetModal>(
                 { opacity: pressed ? 0.6 : 1 },
               ]}
               accessibilityRole="button"
-              accessibilityLabel={strings.settings.reduceMotionLabels[value]}
+              accessibilityLabel={strings.settings.themeModeLabels[value]}
               accessibilityState={{ selected: current === value }}
             >
               <Text style={[type.body, { color: theme.textPrimary }]}>
-                {strings.settings.reduceMotionLabels[value]}
+                {strings.settings.themeModeLabels[value]}
               </Text>
               {current === value ? (
                 <Check size={20} strokeWidth={1.5} color={theme.textPrimary} />
