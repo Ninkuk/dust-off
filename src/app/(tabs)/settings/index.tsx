@@ -2,7 +2,14 @@ import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import { useRef } from "react";
-import { ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GridSizeSheet } from "@/components/grid-size-sheet";
 import { SettingsRow } from "@/components/settings-row";
@@ -78,16 +85,18 @@ export default function SettingsScreen() {
             value={sourceValueLabel(defaultSource)}
             onPress={() => sourceSheetRef.current?.present()}
           />
-          <SettingsRow
-            label={strings.settings.rows.includeIcloud}
-            rightSlot={
-              <Switch
-                value={includeICloud}
-                onValueChange={(v) => setPreference("includeICloud", v)}
-                trackColor={{ true: theme.accent, false: undefined }}
-              />
-            }
-          />
+          {Platform.OS !== "android" && (
+            <SettingsRow
+              label={strings.settings.rows.includeIcloud}
+              rightSlot={
+                <Switch
+                  value={includeICloud}
+                  onValueChange={(v) => setPreference("includeICloud", v)}
+                  trackColor={{ true: theme.accent, false: undefined }}
+                />
+              }
+            />
+          )}
           <SettingsRow
             label={strings.settings.rows.defaultSort}
             value={strings.gallery.sortLabels[defaultSort]}
