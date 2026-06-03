@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { strings } from "@/lib/strings";
 import { usePreferencesStore } from "@/state/preferences-store";
 import { tabularNums, type, useTheme } from "@/theme";
-import { SortSheet } from "./sort-sheet";
+import { SORT_ICONS, SortSheet } from "./sort-sheet";
 
 export function SortStrip({
   count,
@@ -25,6 +25,7 @@ export function SortStrip({
   const insets = useSafeAreaInsets();
   const sortMode = usePreferencesStore((s) => s.defaultSort);
   const sheetRef = useRef<BottomSheetModal>(null);
+  const SortIcon = SORT_ICONS[sortMode];
 
   const backButton = onBack ? (
     <Pressable
@@ -98,6 +99,7 @@ export function SortStrip({
             count,
           )}
         >
+          <SortIcon size={15} strokeWidth={1.5} color={theme.textPrimary} />
           <Text style={[type.caption, { color: theme.textPrimary }]}>
             {strings.gallery.sortLabels[sortMode]}
             {" · "}
@@ -127,8 +129,10 @@ const styles = StyleSheet.create({
   trigger: {
     minHeight: 32,
     minWidth: 44,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 6,
   },
   flex: {
     flex: 1,
