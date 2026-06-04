@@ -1,4 +1,5 @@
 import { type BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
+import { FolderOpen, Heart, Info, Share2, Trash2 } from "lucide-react-native";
 import { forwardRef } from "react";
 import { StyleSheet } from "react-native";
 import { strings } from "@/lib/strings";
@@ -40,15 +41,23 @@ export const TheaterLongPressMenu = forwardRef<BottomSheetModal, Props>(
         <BottomSheetView style={styles.root}>
           <SheetRow
             label={isFavorited ? m.unfavorite : m.favorite}
+            icon={Heart}
+            iconFilled={isFavorited}
             onPress={isFavorited ? onUnfavorite : onFavorite}
           />
-          <SheetRow label={m.share} onPress={onShare} />
-          <SheetRow label={m.delete} tone="destructive" onPress={onDelete} />
-          <SheetRow label={m.info} onPress={onShowInfo} />
+          <SheetRow label={m.share} icon={Share2} onPress={onShare} />
+          <SheetRow label={m.info} icon={Info} onPress={onShowInfo} />
           <SheetRow
             label={m.goToFolder}
+            icon={FolderOpen}
             onPress={onGoToFolder}
             disabled={!hasAlbum}
+          />
+          <SheetRow
+            label={m.delete}
+            icon={Trash2}
+            tone="destructive"
+            onPress={onDelete}
           />
         </BottomSheetView>
       </Sheet>

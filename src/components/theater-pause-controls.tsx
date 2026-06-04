@@ -1,3 +1,6 @@
+import { strings } from "@/lib/strings";
+import { useSlideshowStore } from "@/state/slideshow-store";
+import { useTheme } from "@/theme";
 import { FolderOpen, Heart, Info, Share2, Trash2 } from "lucide-react-native";
 import { useEffect } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
@@ -7,9 +10,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { strings } from "@/lib/strings";
-import { useSlideshowStore } from "@/state/slideshow-store";
-import { useTheme } from "@/theme";
 
 const FADE_MS = 220;
 const ICON_SIZE = 24;
@@ -65,8 +65,8 @@ export function TheaterPauseControls({
           <Heart
             size={ICON_SIZE}
             strokeWidth={STROKE}
-            color={theme.accent}
-            fill={isFavorited ? theme.accent : "transparent"}
+            color={theme.textPrimary}
+            fill={isFavorited ? theme.textPrimary : "transparent"}
           />
         </IconButton>
         <IconButton label={m.share} onPress={onShare}>
@@ -74,13 +74,6 @@ export function TheaterPauseControls({
             size={ICON_SIZE}
             strokeWidth={STROKE}
             color={theme.textPrimary}
-          />
-        </IconButton>
-        <IconButton label={m.delete} onPress={onDelete}>
-          <Trash2
-            size={ICON_SIZE}
-            strokeWidth={STROKE}
-            color={theme.danger}
           />
         </IconButton>
         <IconButton label={m.info} onPress={onShowInfo}>
@@ -100,6 +93,9 @@ export function TheaterPauseControls({
             strokeWidth={STROKE}
             color={theme.textPrimary}
           />
+        </IconButton>
+        <IconButton label={m.delete} onPress={onDelete}>
+          <Trash2 size={ICON_SIZE} strokeWidth={STROKE} color={theme.danger} />
         </IconButton>
       </View>
     </Animated.View>
