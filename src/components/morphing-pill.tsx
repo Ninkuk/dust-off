@@ -1,6 +1,6 @@
-import { Dices, Heart, Play, Share2, Trash2 } from "lucide-react-native";
+import { Heart, Play, Share2, Trash2 } from "lucide-react-native";
 import type { ComponentType, ReactNode } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Animated, { Easing, Keyframe } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -12,9 +12,10 @@ import { heavyTap, mediumTap, selectionTick } from "@/lib/haptics";
 import { strings } from "@/lib/strings";
 import { useSelectionStore } from "@/state/selection-store";
 import { type Toast, useToastStore } from "@/state/toast-store";
-import { colors, ink, type } from "@/theme";
+import { ink, useTheme } from "@/theme";
 import { shellMotion } from "@/theme/motion";
 import { InkPill } from "./ink-pill";
+import { ShufflePill } from "./shuffle-pill";
 import { ToastPill } from "./toast-pill";
 
 // Pill hugs the tab bar with a 12pt gap so the chrome reads as a single
@@ -66,6 +67,7 @@ export function MorphingPill({
   onSlideshowSelection?: () => void;
 }) {
   const insets = useSafeAreaInsets();
+  const theme = useTheme();
   const state = usePillState();
   const label = usePillContextLabel(scope);
   const toast = useToastStore((s) => s.current);
@@ -117,6 +119,11 @@ export function MorphingPill({
         label,
         toast,
         selectionCount,
+        // Shuffle body matches the bottom tab's selection signal: textPrimary
+        // chrome (black on light, near-white on dark) with the surface color as
+        // the inverse content tint. The gold ring is layered on in ShufflePill.
+        shuffleBodyColor: theme.textPrimary,
+        shuffleContentColor: theme.surface,
         onShuffle: handleShufflePress,
         onShuffleLongPress: handleShuffleLongPress,
         onSlideshow: handleSlideshow,
@@ -133,6 +140,8 @@ function renderContent({
   label,
   toast,
   selectionCount,
+  shuffleBodyColor,
+  shuffleContentColor,
   onShuffle,
   onShuffleLongPress,
   onSlideshow,
@@ -144,6 +153,8 @@ function renderContent({
   label: string;
   toast: Toast | null;
   selectionCount: number;
+  shuffleBodyColor: string;
+  shuffleContentColor: string;
   onShuffle: () => void;
   onShuffleLongPress: (() => void) | undefined;
   onSlideshow: (() => void) | undefined;
@@ -155,30 +166,13 @@ function renderContent({
     case "shuffle":
       return (
         <Animated.View entering={popIn()} exiting={popOut}>
-          <InkPill size="pill" tone="accent">
-            <Pressable
-              onPress={onShuffle}
-              onLongPress={onShuffleLongPress}
-              delayLongPress={450}
-              accessibilityRole="button"
-              accessibilityLabel={label}
-              hitSlop={8}
-              style={({ pressed }) => [
-                styles.row,
-                { opacity: pressed ? 0.7 : 1 },
-              ]}
-            >
-              <Dices
-                size={16}
-                strokeWidth={2}
-                color={colors.text.onLight}
-                style={styles.icon}
-              />
-              <Text style={[type.body, { color: colors.text.onLight }]}>
-                {label}
-              </Text>
-            </Pressable>
-          </InkPill>
+          <ShufflePill
+            label={label}
+            onPress={onShuffle}
+            onLongPress={onShuffleLongPress}
+            bodyColor={shuffleBodyColor}
+            contentColor={shuffleContentColor}
+          />
         </Animated.View>
       );
     case "actions": {
@@ -200,7 +194,6 @@ function renderContent({
           <CircleAction
             icon={Heart}
             onPress={onFavorite}
-            color={ink.accent}
             accessibilityLabel={strings.pill.favoriteSelectionA11y(
               selectionCount,
             )}
@@ -273,14 +266,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: "center",
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    minHeight: 24,
-  },
-  icon: {
-    marginRight: 8,
   },
   actionRow: {
     flexDirection: "row",

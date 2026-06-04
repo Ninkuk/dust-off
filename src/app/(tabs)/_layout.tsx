@@ -34,8 +34,8 @@ export default function TabsLayout() {
   if (!isPermissionCleared(permission)) return <Redirect href="/denied" />;
 
   // Selection signal is pure textPrimary contrast (black on light, near-
-  // white on dark) — the warm accent is reserved for the shuffle button so
-  // the bottom bar stays quiet identity-wise.
+  // white on dark); the shuffle button mirrors this same chrome so the
+  // bottom bar and primary action read as one quiet system.
   const mutedText = theme.isDark
     ? "rgba(242,242,242,0.55)"
     : "rgba(0,0,0,0.55)";

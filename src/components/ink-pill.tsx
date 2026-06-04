@@ -3,23 +3,20 @@ import { StyleSheet, View, type ViewStyle } from "react-native";
 import { ink } from "@/theme";
 
 type InkPillSize = "pill" | "chip" | "circle";
-type InkPillTone = "ink" | "accent";
 
 export function InkPill({
   size = "pill",
-  tone = "ink",
   style,
   children,
 }: {
   size?: InkPillSize;
-  tone?: InkPillTone;
   style?: ViewStyle;
   children: ReactNode;
 }) {
-  const toneChrome =
-    tone === "accent"
-      ? { backgroundColor: ink.accent, borderColor: "rgba(0,0,0,0.10)" }
-      : { backgroundColor: ink.surface, borderColor: ink.hairline };
+  const toneChrome = {
+    backgroundColor: ink.surface,
+    borderColor: ink.hairline,
+  };
   return <View style={[styles[size], toneChrome, style]}>{children}</View>;
 }
 
