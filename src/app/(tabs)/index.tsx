@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBulkDelete } from "@/actions/use-bulk-delete";
 import { useBulkFavorite } from "@/actions/use-bulk-favorite";
 import { useBulkShare } from "@/actions/use-bulk-share";
@@ -32,12 +33,13 @@ import { usePermissionQuery } from "@/queries/use-permission-query";
 import { useGalleryStore } from "@/state/gallery-store";
 import { usePreferencesStore } from "@/state/preferences-store";
 import { useSelectionStore } from "@/state/selection-store";
-import { useTheme } from "@/theme";
+import { type, useTheme } from "@/theme";
 
 const SOURCE: AlbumOrAllSource = { kind: "all" };
 
 export default function GalleryScreen() {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const sortMode = usePreferencesStore((s) => s.defaultSort);
   const seed = useGalleryStore((s) => s.seed);
   const anchorIds = useGalleryStore((s) => s.anchorIds);
@@ -134,12 +136,27 @@ export default function GalleryScreen() {
   ]);
 
   return (
-    <View style={[styles.root, { backgroundColor: theme.surface }]}>
-      <SortStrip
-        count={sortedAssets.length}
-        selectionCount={selectedIds.size}
-        onCancel={cancelSelection}
-      />
+    <View
+      style={[
+        styles.root,
+        { backgroundColor: theme.surface, paddingTop: insets.top + 16 },
+      ]}
+    >
+      <View style={styles.header}>
+        <Text
+          accessibilityRole="header"
+          numberOfLines={1}
+          style={[type.display, styles.title, { color: theme.textPrimary }]}
+        >
+          {strings.tabs.gallery}
+        </Text>
+        <SortStrip
+          count={sortedAssets.length}
+          selectionCount={selectedIds.size}
+          onCancel={cancelSelection}
+          inline
+        />
+      </View>
       {limited ? (
         <PartialAccessBanner shared={sharedCount} total={sharedCount} />
       ) : null}
@@ -170,6 +187,16 @@ export default function GalleryScreen() {
 
 const styles = StyleSheet.create({
   root: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    marginBottom: 24,
+    gap: 12,
+  },
+  title: {
     flex: 1,
   },
 });
