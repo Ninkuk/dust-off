@@ -14,18 +14,24 @@ export function SortStrip({
   onCancel,
   onBack,
   title,
+  inline = false,
 }: {
   count: number;
   selectionCount?: number;
   onCancel?: () => void;
   onBack?: () => void;
   title?: string;
+  // When true, render only the active control (sort trigger, or the selection
+  // count + cancel) with no full-width strip chrome or safe-area padding, so it
+  // can sit inline beside a page header whose container owns the layout.
+  inline?: boolean;
 }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const sortMode = usePreferencesStore((s) => s.defaultSort);
   const sheetRef = useRef<BottomSheetModal>(null);
   const SortIcon = SORT_ICONS[sortMode];
+  const selecting = (selectionCount ?? 0) > 0 && !!onCancel;
 
   const backButton = onBack ? (
     <Pressable
@@ -42,7 +48,60 @@ export function SortStrip({
     </Pressable>
   ) : null;
 
-  if ((selectionCount ?? 0) > 0 && onCancel) {
+  const cancelButton = (
+    <Pressable
+      onPress={onCancel}
+      hitSlop={12}
+      accessibilityRole="button"
+      accessibilityLabel={strings.selection.cancelA11y}
+      style={({ pressed }) => [styles.cancel, { opacity: pressed ? 0.6 : 1 }]}
+    >
+      <X size={20} strokeWidth={1.5} color={theme.textPrimary} />
+    </Pressable>
+  );
+
+  const sortTrigger = (
+    <Pressable
+      onPress={() => sheetRef.current?.present()}
+      hitSlop={8}
+      style={({ pressed }) => [styles.trigger, { opacity: pressed ? 0.6 : 1 }]}
+      accessibilityRole="button"
+      accessibilityLabel={strings.gallery.sortStripA11y(
+        strings.gallery.sortLabels[sortMode],
+        count,
+      )}
+    >
+      <SortIcon size={15} strokeWidth={1.5} color={theme.textPrimary} />
+      <Text style={[type.caption, { color: theme.textPrimary }]}>
+        {strings.gallery.sortLabels[sortMode]}
+        {" · "}
+        <Text style={tabularNums}>{strings.gallery.formatCount(count)}</Text>
+      </Text>
+    </Pressable>
+  );
+
+  if (inline) {
+    if (selecting) {
+      return (
+        <View style={styles.inlineSelection}>
+          <Text
+            style={[type.caption, tabularNums, { color: theme.textPrimary }]}
+          >
+            {strings.selection.selectedLabel(selectionCount ?? 0)}
+          </Text>
+          {cancelButton}
+        </View>
+      );
+    }
+    return (
+      <>
+        {sortTrigger}
+        <SortSheet ref={sheetRef} />
+      </>
+    );
+  }
+
+  if (selecting) {
     return (
       <View style={[styles.rootRow, { paddingTop: insets.top + 8 }]}>
         {backButton}
@@ -57,18 +116,7 @@ export function SortStrip({
         >
           {strings.selection.selectedLabel(selectionCount ?? 0)}
         </Text>
-        <Pressable
-          onPress={onCancel}
-          hitSlop={12}
-          accessibilityRole="button"
-          accessibilityLabel={strings.selection.cancelA11y}
-          style={({ pressed }) => [
-            styles.cancel,
-            { opacity: pressed ? 0.6 : 1 },
-          ]}
-        >
-          <X size={20} strokeWidth={1.5} color={theme.textPrimary} />
-        </Pressable>
+        {cancelButton}
       </View>
     );
   }
@@ -86,28 +134,7 @@ export function SortStrip({
             {title}
           </Text>
         ) : null}
-        <Pressable
-          onPress={() => sheetRef.current?.present()}
-          hitSlop={8}
-          style={({ pressed }) => [
-            styles.trigger,
-            { opacity: pressed ? 0.6 : 1 },
-          ]}
-          accessibilityRole="button"
-          accessibilityLabel={strings.gallery.sortStripA11y(
-            strings.gallery.sortLabels[sortMode],
-            count,
-          )}
-        >
-          <SortIcon size={15} strokeWidth={1.5} color={theme.textPrimary} />
-          <Text style={[type.caption, { color: theme.textPrimary }]}>
-            {strings.gallery.sortLabels[sortMode]}
-            {" · "}
-            <Text style={tabularNums}>
-              {strings.gallery.formatCount(count)}
-            </Text>
-          </Text>
-        </Pressable>
+        {sortTrigger}
       </View>
       <SortSheet ref={sheetRef} />
     </>
@@ -125,6 +152,11 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     flexDirection: "row",
     alignItems: "center",
+  },
+  inlineSelection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   trigger: {
     minHeight: 32,
