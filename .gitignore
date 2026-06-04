@@ -44,3 +44,6 @@ app-example
 
 # local test fixtures (images for emulator seeding, etc.)
 /fixtures/
+
+.playwright-mcp
+.remember
