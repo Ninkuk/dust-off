@@ -1,10 +1,10 @@
 # Dust Off
 
 ![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20Android-555)
-![Expo SDK](https://img.shields.io/badge/Expo%20SDK-55-000020?logo=expo&logoColor=white)
-![React Native](https://img.shields.io/badge/React%20Native-0.83-61DAFB?logo=react&logoColor=black)
-![New Architecture](https://img.shields.io/badge/New%20Architecture-enabled-success)
-![License: MIT](https://img.shields.io/github/license/Ninkuk/dust-off)
+[![Expo SDK](https://img.shields.io/badge/Expo%20SDK-55-000020?logo=expo&logoColor=white)](https://expo.dev)
+[![React Native](https://img.shields.io/badge/React%20Native-0.83-61DAFB?logo=react&logoColor=black)](https://reactnative.dev)
+[![New Architecture](https://img.shields.io/badge/New%20Architecture-enabled-success)](https://reactnative.dev/architecture/landing-page)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 A randomized photo gallery and slideshow for iOS and Android. Surfaces the photos you forgot you had — local-only, no cloud, no telemetry.
 
