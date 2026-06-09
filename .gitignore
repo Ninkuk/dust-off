@@ -18,7 +18,7 @@ expo-env.d.ts
 *.key
 *.mobileprovision
 
-# Google Play service-account key (NEVER commit)
+# Google Play service-account key
 *service-account*.json
 
 # Metro

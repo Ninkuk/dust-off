@@ -2,6 +2,28 @@
   "name": "dust-off",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "description": "A privacy-first randomized photo gallery and slideshow for iOS and Android. Rediscover the photos you forgot you had — local-only, no cloud, no telemetry.",
+  "keywords": [
+    "expo",
+    "react-native",
+    "ios",
+    "android",
+    "photo-gallery",
+    "slideshow",
+    "privacy",
+    "local-first",
+    "expo-router",
+    "media-library"
+  ],
+  "homepage": "https://github.com/Ninkuk/dust-off#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ninkuk/dust-off.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ninkuk/dust-off/issues"
+  },
+  "author": "Ninad Kulkarni",
   "license": "MIT",
   "scripts": {
     "start": "expo start",
