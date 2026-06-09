@@ -1,0 +1,36 @@
+# Dependabot configuration.
+#
+# NOTE on Expo: this project pins packages to an Expo SDK. Routine SDK-version
+# bumps should go through `npx expo install --fix` (which picks SDK-compatible
+# versions), NOT by merging individual Dependabot PRs. The groups + major-version
+# ignore below keep Dependabot focused on safe patch/minor and security updates;
+# treat any Expo/React Native PR as a prompt to run `expo install --fix`, not a
+# straight merge.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      expo:
+        patterns:
+          - "expo"
+          - "expo-*"
+          - "@expo/*"
+      react-native:
+        patterns:
+          - "react-native"
+          - "react-native-*"
+          - "@react-native*/*"
+          - "@shopify/*"
+    ignore:
+      # SDK-aligned packages must not jump majors independently of the Expo SDK.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
