@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 import { useBulkDelete } from "@/actions/use-bulk-delete";
 import { useBulkFavorite } from "@/actions/use-bulk-favorite";
@@ -12,10 +12,6 @@ import { EmptyState } from "@/components/empty-state";
 import { GalleryGrid } from "@/components/gallery-grid";
 import { MorphingPill } from "@/components/morphing-pill";
 import { SortStrip } from "@/components/sort-strip";
-import {
-  SourcePickerSheet,
-  type SourcePickerHandle,
-} from "@/components/source-picker-sheet";
 import { useSelectionBackHandler } from "@/hooks/use-selection-back-handler";
 import { firstParam } from "@/lib/route-params";
 import { seededShuffle } from "@/lib/seeded-shuffle";
@@ -60,7 +56,6 @@ export default function AlbumGalleryScreen() {
   const startFromSelection = useStartSlideshowFromSelection();
   const selectedIds = useSelectionStore((s) => s.selectedIds);
   const cancelSelection = useSelectionStore((s) => s.cancel);
-  const pickerRef = useRef<SourcePickerHandle>(null);
   useSelectionBackHandler();
 
   const allAssets = useMemo(
@@ -117,8 +112,6 @@ export default function AlbumGalleryScreen() {
         ? { source: "favorites", assets: allAssets }
         : { source: "album", albumId, assets: allAssets },
     );
-  const handleLongPressShuffle = () =>
-    pickerRef.current?.present({ shuffleOnDismiss: true });
   const handleSlideshowSelection = () => startFromSelection(allAssets);
   const handleOpenPhoto = useCallback(
     (id: string) => {
@@ -157,10 +150,8 @@ export default function AlbumGalleryScreen() {
         onShareAll={handleShareAll}
         onDeleteAll={handleDeleteAll}
         onShuffle={handleShuffle}
-        onLongPressShuffle={handleLongPressShuffle}
         onSlideshowSelection={handleSlideshowSelection}
       />
-      <SourcePickerSheet ref={pickerRef} />
     </View>
   );
 }

@@ -14,10 +14,6 @@ import { GalleryGrid } from "@/components/gallery-grid";
 import { MorphingPill } from "@/components/morphing-pill";
 import { PartialAccessBanner } from "@/components/partial-access-banner";
 import { SortStrip } from "@/components/sort-strip";
-import {
-  SourcePickerSheet,
-  type SourcePickerHandle,
-} from "@/components/source-picker-sheet";
 import { useFirstReveal } from "@/hooks/use-first-reveal";
 import { useSelectionBackHandler } from "@/hooks/use-selection-back-handler";
 import { isPermissionLimited } from "@/lib/permission";
@@ -58,7 +54,6 @@ export default function GalleryScreen() {
   const startFromSelection = useStartSlideshowFromSelection();
   const selectedIds = useSelectionStore((s) => s.selectedIds);
   const cancelSelection = useSelectionStore((s) => s.cancel);
-  const pickerRef = useRef<SourcePickerHandle>(null);
 
   const allAssets = useMemo(
     () => query.data?.pages.flatMap((p) => p.assets) ?? [],
@@ -97,8 +92,6 @@ export default function GalleryScreen() {
   const handleDeleteAll = () => bulkDelete([...selectedIds]);
   const handleShuffle = () =>
     startSlideshow({ source: "all", assets: allAssets });
-  const handleLongPressShuffle = () =>
-    pickerRef.current?.present({ shuffleOnDismiss: true });
   const handleSlideshowSelection = () => startFromSelection(allAssets);
   const handleOpenPhoto = useCallback((id: string) => {
     router.push({
@@ -107,33 +100,21 @@ export default function GalleryScreen() {
     });
   }, []);
 
-  // Bridge for /theater/empty CTAs: ?openPicker=1 reopens the picker (no
-  // auto-shuffle; user must dismiss again to start). ?startSlideshow=all
-  // starts a one-shot All-Photos slideshow without mutating defaultSource.
+  // Bridge for the /theater/empty "Use All Photos" CTA: ?startSlideshow=all
+  // starts a one-shot All-Photos slideshow.
   const queryParams = useLocalSearchParams<{
-    openPicker?: string | string[];
     startSlideshow?: string | string[];
   }>();
   const queryParamHandledRef = useRef(false);
   useEffect(() => {
     if (queryParamHandledRef.current) return;
-    const openPicker = firstParam(queryParams.openPicker) === "1";
     const startKind = firstParam(queryParams.startSlideshow);
-    if (openPicker) {
-      queryParamHandledRef.current = true;
-      pickerRef.current?.present({ shuffleOnDismiss: false });
-      router.setParams({ openPicker: undefined });
-    } else if (startKind === "all" && allAssets.length > 0) {
+    if (startKind === "all" && allAssets.length > 0) {
       queryParamHandledRef.current = true;
       startSlideshow({ source: "all", assets: allAssets });
       router.setParams({ startSlideshow: undefined });
     }
-  }, [
-    queryParams.openPicker,
-    queryParams.startSlideshow,
-    allAssets,
-    startSlideshow,
-  ]);
+  }, [queryParams.startSlideshow, allAssets, startSlideshow]);
 
   return (
     <View
@@ -177,10 +158,8 @@ export default function GalleryScreen() {
         onShareAll={handleShareAll}
         onDeleteAll={handleDeleteAll}
         onShuffle={handleShuffle}
-        onLongPressShuffle={handleLongPressShuffle}
         onSlideshowSelection={handleSlideshowSelection}
       />
-      <SourcePickerSheet ref={pickerRef} />
     </View>
   );
 }

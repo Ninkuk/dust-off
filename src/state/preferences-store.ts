@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { zustandStorage } from "@/lib/async-storage";
-import type { PersistableSourceSet } from "@/lib/source-set";
 
 export type SortMode = "random" | "newest" | "oldest" | "name";
 export type GridSize = "compact" | "comfortable" | "large";
@@ -18,7 +17,6 @@ export type Preferences = {
   includeICloud: boolean;
   defaultSort: SortMode;
   gridSize: GridSize;
-  defaultSource: PersistableSourceSet;
 };
 
 type PreferencesActions = {
@@ -39,7 +37,6 @@ const defaults: Preferences = {
   includeICloud: false,
   defaultSort: "random",
   gridSize: "comfortable",
-  defaultSource: { kind: "all" },
 };
 
 export const usePreferencesStore = create<Preferences & PreferencesActions>()(
@@ -58,7 +55,20 @@ export const usePreferencesStore = create<Preferences & PreferencesActions>()(
     {
       name: "@dust-off/preferences",
       storage: zustandStorage,
-      version: 1,
+      version: 2,
+      // v2 drops `defaultSource` (the old shuffle-source picker is gone).
+      // Strip the stale key from previously-persisted state so it doesn't
+      // linger in the rehydrated object.
+      migrate: (persisted) => {
+        if (persisted && typeof persisted === "object") {
+          const { defaultSource: _drop, ...rest } = persisted as Record<
+            string,
+            unknown
+          >;
+          return rest as Preferences;
+        }
+        return persisted as Preferences;
+      },
       partialize: ({ setPreference, resetFlags, ...data }) => data,
     },
   ),

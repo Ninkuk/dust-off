@@ -1,10 +1,13 @@
 import { Image } from "expo-image";
 import type { Album, Asset } from "expo-media-library";
-import { Heart } from "lucide-react-native";
+import { Check, Heart } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useFavoritesCover } from "@/hooks/use-favorites-cover";
 import { useAlbumCoverQuery } from "@/queries/use-album-cover-query";
+import { mediumTap } from "@/lib/haptics";
+import { FAVORITES_ALBUM_ID } from "@/lib/source-set";
 import { strings } from "@/lib/strings";
+import { useAlbumSelectionStore } from "@/state/album-selection-store";
 import { tabularNums, type, useTheme } from "@/theme";
 
 const GUTTER = 8;
@@ -16,6 +19,13 @@ type AlbumTileProps =
 
 export function AlbumTile(props: AlbumTileProps) {
   const theme = useTheme();
+  const id =
+    props.kind === "favorites" ? FAVORITES_ALBUM_ID : props.album.id;
+  const selected = useAlbumSelectionStore((s) => s.selectedIds.has(id));
+  const selectionActive = useAlbumSelectionStore(
+    (s) => s.selectedIds.size > 0,
+  );
+
   const title =
     props.kind === "favorites"
       ? strings.albums.favoritesTitle
@@ -23,10 +33,26 @@ export function AlbumTile(props: AlbumTileProps) {
   const count =
     props.kind === "favorites" ? props.count : props.album.assetCount;
 
+  const handlePress = () => {
+    if (selectionActive) {
+      useAlbumSelectionStore.getState().toggle(id);
+      return;
+    }
+    props.onPress();
+  };
+
+  const handleLongPress = () => {
+    mediumTap();
+    useAlbumSelectionStore.getState().toggle(id);
+  };
+
   return (
     <Pressable
-      onPress={props.onPress}
+      onPress={handlePress}
+      onLongPress={handleLongPress}
+      delayLongPress={300}
       accessibilityRole="button"
+      accessibilityState={{ selected }}
       accessibilityLabel={strings.albums.tileA11y(title, count)}
       style={({ pressed }) => [styles.cell, { opacity: pressed ? 0.6 : 1 }]}
     >
@@ -45,6 +71,20 @@ export function AlbumTile(props: AlbumTileProps) {
         ) : (
           <RealAlbumCover albumId={props.album.id} seed={props.seed} />
         )}
+        {selected ? (
+          <>
+            <View
+              pointerEvents="none"
+              style={[styles.selectedBorder, { borderColor: theme.accent }]}
+            />
+            <View
+              pointerEvents="none"
+              style={[styles.checkBadge, { backgroundColor: theme.accent }]}
+            >
+              <Check size={12} strokeWidth={2.5} color={theme.surface} />
+            </View>
+          </>
+        ) : null}
       </View>
       <Text
         style={[type.caption, styles.title, { color: theme.textPrimary }]}
@@ -109,6 +149,20 @@ const styles = StyleSheet.create({
   },
   empty: {
     ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  selectedBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderWidth: 2,
+  },
+  checkBadge: {
+    position: "absolute",
+    bottom: 6,
+    right: 6,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     alignItems: "center",
     justifyContent: "center",
   },

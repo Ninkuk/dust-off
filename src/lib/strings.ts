@@ -44,6 +44,8 @@ export const strings = {
     favoritesTitle: "Favorites",
     tileA11y: (title: string, count: number) =>
       `${title}, ${count} photos`,
+    select: "Select",
+    selectA11y: "Select albums to shuffle",
   },
   selection: {
     selectedLabel: (n: number) => `${n} selected`,
@@ -54,6 +56,9 @@ export const strings = {
     shuffleAll: "Shuffle All",
     shuffleAlbum: (title: string) => `Shuffle ${title}`,
     shuffleA11y: "Shuffle",
+    shuffleSelected: (n: number) => `Shuffle (${n})`,
+    shuffleSelectedA11y: (n: number) =>
+      `Shuffle ${n} selected ${n === 1 ? "source" : "sources"}`,
     slideshowSelectionA11y: (n: number) =>
       `Play slideshow of ${n} selected photos`,
     favoriteSelectionA11y: (n: number) => `Favorite ${n} selected photos`,
@@ -111,21 +116,6 @@ export const strings = {
       shutter: "Shutter",
       iso: "ISO",
     },
-    sourcePicker: {
-      title: "Where to shuffle from?",
-      helper: "Tap to toggle. Auto-saves on close.",
-      allPhotos: "All Photos",
-      favorites: "Favorites",
-      // Returns a raw count, or "247 · 12 eligible" when filters apply. Phase 7
-      // always returns the raw count (eligible filtering is Phase 8).
-      formatCount: (total: number, eligible: number) =>
-        eligible === total
-          ? total.toLocaleString()
-          : `${total.toLocaleString()} · ${eligible.toLocaleString()} eligible`,
-      rowA11y: (name: string, count: number, selected: boolean) =>
-        `${name}, ${count} photos, ${selected ? "selected" : "not selected"}`,
-      resolving: "Resolving…",
-    },
     gestureGuide: {
       doubleTap: "Double-tap to favorite",
       swipeHint: "Swipe to navigate",
@@ -134,7 +124,7 @@ export const strings = {
         "Slideshow gestures: tap to play, swipe to navigate, double-tap to favorite. Tap anywhere to dismiss.",
     },
     empty: {
-      adjust: "Adjust sources",
+      back: "Go Back",
       useAllPhotos: "Use All Photos",
     },
   },
@@ -148,7 +138,6 @@ export const strings = {
     },
     rows: {
       theme: "Theme",
-      source: "Source",
       includeIcloud: "Include iCloud albums",
       defaultSort: "Default sort",
       gridSize: "Grid size",
@@ -162,12 +151,6 @@ export const strings = {
       auto: "Automatic",
       light: "Light",
       dark: "Dark",
-    },
-    sourceLabels: {
-      all: "All Photos",
-      favorites: "Favorites",
-      album: "One album",
-      union: "Multiple",
     },
     gridSizeLabels: {
       compact: "Compact",

@@ -5,12 +5,12 @@ import { Button } from "@/components/button";
 import { strings } from "@/lib/strings";
 import { type, useTheme } from "@/theme";
 
-// D-7 fail-at-start surface. Reached when a slideshow start (pill long-press
-// → picker → empty union, or selection-driven slideshow with zero matches)
-// resolves to no eligible photos. Two CTAs:
-//   • Adjust sources → bounces back to gallery with ?openPicker=1.
-//   • Use All Photos → bounces back to gallery with ?startSlideshow=all.
-//     One-shot — does NOT mutate the user's persisted defaultSource.
+// Fail-at-start surface. Reached when a slideshow start (album-selection union
+// with zero matches, or selection-driven slideshow with zero matches) resolves
+// to no eligible photos. Two CTAs:
+//   • Go Back → returns to the previous screen to adjust the selection.
+//   • Use All Photos → bounces back to the gallery with ?startSlideshow=all
+//     (one-shot All-Photos slideshow).
 export default function TheaterEmptyScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
@@ -32,13 +32,11 @@ export default function TheaterEmptyScreen() {
       </Text>
       <View style={styles.actions}>
         <Button
-          label={strings.theater.empty.adjust}
-          onPress={() =>
-            router.replace({
-              pathname: "/(tabs)",
-              params: { openPicker: "1" },
-            })
-          }
+          label={strings.theater.empty.back}
+          onPress={() => {
+            if (router.canGoBack()) router.back();
+            else router.replace("/(tabs)");
+          }}
         />
         <View style={styles.spacer} />
         <Button

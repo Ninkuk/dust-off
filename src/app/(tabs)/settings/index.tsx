@@ -17,12 +17,7 @@ import { SettingsSection } from "@/components/settings-section";
 import { SlideDurationSheet } from "@/components/slide-duration-sheet";
 import { SlideTransitionSheet } from "@/components/slide-transition-sheet";
 import { SortSheet } from "@/components/sort-sheet";
-import {
-  SourcePickerSheet,
-  type SourcePickerHandle,
-} from "@/components/source-picker-sheet";
 import { ThemeModeSheet } from "@/components/theme-mode-sheet";
-import type { PersistableSourceSet } from "@/lib/source-set";
 import { strings } from "@/lib/strings";
 import { usePreferencesStore } from "@/state/preferences-store";
 import { type, useTheme } from "@/theme";
@@ -33,13 +28,11 @@ export default function SettingsScreen() {
 
   const themeSheetRef = useRef<BottomSheetModal>(null);
   const sortSheetRef = useRef<BottomSheetModal>(null);
-  const sourceSheetRef = useRef<SourcePickerHandle>(null);
   const gridSheetRef = useRef<BottomSheetModal>(null);
   const durationSheetRef = useRef<BottomSheetModal>(null);
   const transitionSheetRef = useRef<BottomSheetModal>(null);
 
   const themeMode = usePreferencesStore((s) => s.themeMode);
-  const defaultSource = usePreferencesStore((s) => s.defaultSource);
   const defaultSort = usePreferencesStore((s) => s.defaultSort);
   const gridSize = usePreferencesStore((s) => s.gridSize);
   const slideDurationSec = usePreferencesStore((s) => s.slideDurationSec);
@@ -80,11 +73,6 @@ export default function SettingsScreen() {
         </SettingsSection>
 
         <SettingsSection title={strings.settings.sections.library}>
-          <SettingsRow
-            label={strings.settings.rows.source}
-            value={sourceValueLabel(defaultSource)}
-            onPress={() => sourceSheetRef.current?.present()}
-          />
           {Platform.OS !== "android" && (
             <SettingsRow
               label={strings.settings.rows.includeIcloud}
@@ -137,25 +125,11 @@ export default function SettingsScreen() {
 
       <ThemeModeSheet ref={themeSheetRef} />
       <SortSheet ref={sortSheetRef} />
-      <SourcePickerSheet ref={sourceSheetRef} />
       <GridSizeSheet ref={gridSheetRef} />
       <SlideDurationSheet ref={durationSheetRef} />
       <SlideTransitionSheet ref={transitionSheetRef} />
     </View>
   );
-}
-
-function sourceValueLabel(s: PersistableSourceSet): string {
-  switch (s.kind) {
-    case "all":
-      return strings.settings.sourceLabels.all;
-    case "favorites":
-      return strings.settings.sourceLabels.favorites;
-    case "album":
-      return strings.settings.sourceLabels.album;
-    case "union":
-      return strings.settings.sourceLabels.union;
-  }
 }
 
 const styles = StyleSheet.create({

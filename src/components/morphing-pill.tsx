@@ -1,19 +1,19 @@
-import { Heart, Play, Share2, Trash2 } from "lucide-react-native";
-import type { ComponentType, ReactNode } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
-import Animated, { Easing, Keyframe } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   type PillScope,
   usePillContextLabel,
 } from "@/hooks/use-pill-context-label";
 import { type PillState, usePillState } from "@/hooks/use-pill-state";
-import { heavyTap, mediumTap, selectionTick } from "@/lib/haptics";
+import { mediumTap, selectionTick } from "@/lib/haptics";
 import { strings } from "@/lib/strings";
 import { useSelectionStore } from "@/state/selection-store";
 import { type Toast, useToastStore } from "@/state/toast-store";
 import { ink, useTheme } from "@/theme";
 import { shellMotion } from "@/theme/motion";
+import { Heart, Play, Share2, Trash2 } from "lucide-react-native";
+import type { ComponentType, ReactNode } from "react";
+import { Pressable, StyleSheet, View } from "react-native";
+import Animated, { Easing, Keyframe } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { InkPill } from "./ink-pill";
 import { ShufflePill } from "./shuffle-pill";
 import { ToastPill } from "./toast-pill";
@@ -55,7 +55,6 @@ export function MorphingPill({
   onShareAll,
   onDeleteAll,
   onShuffle,
-  onLongPressShuffle,
   onSlideshowSelection,
 }: {
   scope: PillScope;
@@ -63,7 +62,6 @@ export function MorphingPill({
   onShareAll: () => void;
   onDeleteAll: () => void;
   onShuffle: () => void;
-  onLongPressShuffle?: () => void;
   onSlideshowSelection?: () => void;
 }) {
   const insets = useSafeAreaInsets();
@@ -79,13 +77,6 @@ export function MorphingPill({
     selectionTick();
     onShuffle();
   };
-
-  const handleShuffleLongPress = onLongPressShuffle
-    ? () => {
-        heavyTap();
-        onLongPressShuffle();
-      }
-    : undefined;
 
   const handleSlideshow = onSlideshowSelection
     ? () => {
@@ -125,7 +116,6 @@ export function MorphingPill({
         shuffleBodyColor: theme.textPrimary,
         shuffleContentColor: theme.surface,
         onShuffle: handleShufflePress,
-        onShuffleLongPress: handleShuffleLongPress,
         onSlideshow: handleSlideshow,
         onFavorite: handleFavorite,
         onShare: handleShare,
@@ -143,7 +133,6 @@ function renderContent({
   shuffleBodyColor,
   shuffleContentColor,
   onShuffle,
-  onShuffleLongPress,
   onSlideshow,
   onFavorite,
   onShare,
@@ -156,7 +145,6 @@ function renderContent({
   shuffleBodyColor: string;
   shuffleContentColor: string;
   onShuffle: () => void;
-  onShuffleLongPress: (() => void) | undefined;
   onSlideshow: (() => void) | undefined;
   onFavorite: () => void;
   onShare: () => void;
@@ -169,7 +157,6 @@ function renderContent({
           <ShufflePill
             label={label}
             onPress={onShuffle}
-            onLongPress={onShuffleLongPress}
             bodyColor={shuffleBodyColor}
             contentColor={shuffleContentColor}
           />
@@ -202,9 +189,7 @@ function renderContent({
           <CircleAction
             icon={Share2}
             onPress={onShare}
-            accessibilityLabel={strings.pill.shareSelectionA11y(
-              selectionCount,
-            )}
+            accessibilityLabel={strings.pill.shareSelectionA11y(selectionCount)}
             enterDelay={i++ * CIRCLE_STAGGER_MS}
           />
           <CircleAction
