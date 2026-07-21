@@ -143,7 +143,9 @@ export function ShufflePill({
               color={contentColor}
               style={styles.icon}
             />
-            <Text style={[type.body, { color: contentColor }]}>{label}</Text>
+            <Text style={[type.bodyStrong, { color: contentColor }]}>
+              {label}
+            </Text>
           </View>
         )}
       </Pressable>

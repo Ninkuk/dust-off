@@ -4,6 +4,7 @@ import { useAssetsQuery } from "@/queries/use-assets-query";
 import { usePermissionQuery } from "@/queries/use-permission-query";
 import { useFavoritesStore } from "@/state/favorites-store";
 import { usePreferencesStore } from "@/state/preferences-store";
+import { useAppFonts } from "@/theme/fonts";
 
 const GALLERY_BACKSTOP_MS = 1000;
 
@@ -36,6 +37,7 @@ function useStoreHydration(): boolean {
 }
 
 export function useSplashGate(): { ready: boolean } {
+  const fontsLoaded = useAppFonts();
   const hydrated = useStoreHydration();
   const hasSeenOnboarding = usePreferencesStore((s) => s.hasSeenOnboarding);
   const permissionQuery = usePermissionQuery();
@@ -54,6 +56,9 @@ export function useSplashGate(): { ready: boolean } {
   }, [hydrated, hasSeenOnboarding, permissionSettled, cleared]);
 
   const ready = (() => {
+    // Fonts gate every path — even onboarding — so no headline ever paints in
+    // the system fallback before the custom cut is ready.
+    if (!fontsLoaded) return false;
     if (!hydrated) return false;
     if (!hasSeenOnboarding) return true;
     if (!permissionSettled) return false;

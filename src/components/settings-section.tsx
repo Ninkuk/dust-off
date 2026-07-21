@@ -17,7 +17,7 @@ export function SettingsSection({
       <Text
         accessibilityRole="header"
         style={[
-          type.caption,
+          type.overline,
           styles.header,
           { color: theme.textPrimary, opacity: 0.5 },
         ]}

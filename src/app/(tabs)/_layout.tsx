@@ -2,6 +2,7 @@ import { isPermissionCleared } from "@/lib/permission";
 import { strings } from "@/lib/strings";
 import { usePermissionQuery } from "@/queries/use-permission-query";
 import { usePreferencesStore } from "@/state/preferences-store";
+import { fontFamilies } from "@/theme/fonts";
 import { useTheme } from "@/theme";
 import Feather from "@expo/vector-icons/Feather";
 import { Redirect } from "expo-router";
@@ -13,9 +14,12 @@ import { NativeTabs } from "expo-router/unstable-native-tabs";
 // compatible font that NativeTabs can rasterize) is outline-only, so
 // selection is conveyed by color rather than fill. The design system tops
 // out at fontWeight 400.
+// Inter via fontFamily (the cut encodes weight, so no fontWeight). NativeTabs
+// renders an OS-native bar, but expo-font registers families natively, so the
+// bar resolves "Inter_400Regular" by name once fonts have loaded.
 const LABEL_BASE = {
+  fontFamily: fontFamilies.body,
   fontSize: 10,
-  fontWeight: "400",
   letterSpacing: 0.2,
 } as const;
 
