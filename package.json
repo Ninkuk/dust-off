@@ -38,12 +38,13 @@
     "seed:ios": "bash scripts/seed-ios-simulator.sh",
     "lint": "expo lint",
     "react-doctor": "npx react-doctor@latest",
-    "expo-doctor": "npx expo-doctor@latest",
+"expo-doctor": "npx expo-doctor@latest",
     "build:dev:android": "eas build --profile development --platform android",
     "build:preview:android": "eas build --profile preview --platform android",
     "build:prod:android": "eas build --profile production --platform android",
     "submit:android": "eas submit --profile production --platform android",
-    "deploy:android": "eas build --profile production --platform android --auto-submit"
+    "deploy:android": "eas build --profile production --platform android --auto-submit",
+    "test": "jest"
   },
   "dependencies": {
     "@expo-google-fonts/fraunces": "^0.4.1",
@@ -94,13 +95,29 @@
     "zustand": "^5.0.13"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.2.2",
     "eslint": "^9.0.0",
-    "eslint-config-expo": "~55.0.1",
+"eslint-config-expo": "~55.0.1",
+    "jest": "~29.7.0",
+    "jest-expo": "~55.0.20",
     "typescript": "~5.9.2"
   },
   "overrides": {
     "postcss": "^8.5.10"
   },
-  "private": true
+  "private": true,
+  "jest": {
+    "preset": "jest-expo",
+    "setupFiles": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "moduleNameMapper": {
+      "^@/assets/(.*)$": "<rootDir>/assets/$1",
+      "^@/(.*)$": "<rootDir>/src/$1"
+    },
+    "testMatch": [
+      "<rootDir>/src/**/*.test.ts"
+    ]
+  }
 }
