@@ -1,4 +1,5 @@
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
+import { Image } from "expo-image";
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import type { Asset } from "expo-media-library";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -131,6 +132,24 @@ export default function TheaterScreen() {
   const currentId = queueId ?? initialAssetId;
   const currentIndex = indexById.get(currentId) ?? -1;
   const current = currentIndex >= 0 ? assets[currentIndex] : undefined;
+
+  // Warm the neighbors so the cross-fade swaps onto an already-decoded image.
+  // Wrap-around targets are unknowable (reshuffle uses a fresh seed), so only
+  // in-queue neighbors are prefetched. Failures are non-fatal by design.
+  useEffect(() => {
+    const targets: string[] = [];
+    for (const qi of [queueIndex + 1, queueIndex - 1]) {
+      const id = queue[qi];
+      if (!id) continue;
+      const i = indexById.get(id);
+      if (i === undefined) continue;
+      const uri = assets[i]?.uri;
+      if (uri) targets.push(uri);
+    }
+    if (targets.length > 0) {
+      Image.prefetch(targets).catch(() => {});
+    }
+  }, [queue, queueIndex, indexById, assets]);
 
   // One-shot init: build the queue once assets land. Tap-photo entry pins the
   // tapped asset as the queue head via anchorIds; pill-Shuffle entry uses no
