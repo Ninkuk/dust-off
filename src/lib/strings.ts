@@ -3,7 +3,12 @@ export const strings = {
     card1: "Photos you forgot you had.",
     card2: "Stays on your phone.",
     prePrompt: "To shuffle your photos, the app needs access to them.",
+    // Restated at the decision point: the reassurance on card 2 is spent two
+    // cards before the permission dialog, which is the moment it has to work.
+    prePromptBody: "Nothing leaves your device.",
     continue: "Continue",
+    skip: "Skip",
+    pageA11y: (page: number, total: number) => `Page ${page} of ${total}`,
   },
   permissionDenied: {
     title: "No photos to dust off.",
@@ -12,13 +17,31 @@ export const strings = {
     openSettings: "Open Settings",
   },
   partialAccess: {
-    update: "Update",
-    label: (shared: number, total: number) =>
-      `${shared.toLocaleString()} of ${total.toLocaleString()} photos shared with Dust Off`,
+    update: "Choose Photos",
+    // No OS API exposes the library total under limited access, so any
+    // "N of N" phrasing can only ever report shared-of-shared — which reads as
+    // "everything is shared". State the shared count alone.
+    label: (shared: number) =>
+      `${shared.toLocaleString()} ${shared === 1 ? "photo" : "photos"} shared with Dust Off`,
   },
   emptyStates: {
     nothingYet: "Nothing yet.",
     nothingToShuffle: "Nothing to shuffle.",
+  },
+  tile: {
+    // Tiles previously announced as bare unlabelled buttons, so a large grid
+    // was an undifferentiated wall of "button" to a screen reader.
+    photoA11y: (date?: string) => (date ? `Photo, ${date}` : "Photo"),
+    selectA11y: "Select",
+  },
+  errorStates: {
+    photosTitle: "Couldn't read your photos.",
+    photosBody: "Something went wrong reading the library.",
+    albumsTitle: "Couldn't read your albums.",
+    retry: "Try Again",
+  },
+  loading: {
+    photosA11y: "Loading photos",
   },
   tabs: {
     gallery: "Gallery",
@@ -74,11 +97,35 @@ export const strings = {
   deleteConfirm: {
     titleSingle: "Delete photo?",
     titleBulk: (n: number) => `Delete ${n} photos?`,
-    bodyIos: "This photo will be moved to your Recently Deleted album.",
-    bodyAndroidNew: "This photo will be moved to Trash.",
-    bodyAndroidOld: "This photo will be deleted from your library.",
+    // Bodies were singular regardless of count — a 300-photo delete read
+    // "This photo will be…".
+    bodyIos: (n: number) =>
+      n === 1
+        ? "This photo will be moved to your Recently Deleted album."
+        : `These ${n} photos will be moved to your Recently Deleted album.`,
+    bodyAndroidNew: (n: number) =>
+      n === 1
+        ? "This photo will be moved to Trash."
+        : `These ${n} photos will be moved to Trash.`,
+    bodyAndroidOld: (n: number) =>
+      n === 1
+        ? "This photo will be deleted from your library."
+        : `These ${n} photos will be deleted from your library.`,
     delete: (n: number) => (n === 1 ? "Delete" : `Delete ${n}`),
     cancel: "Cancel",
+  },
+  // Shown after a delete succeeds. "Gone." alone told the user nothing about
+  // recoverability; naming where the photos went is the reassurance that
+  // matters most immediately after an irreversible-feeling action.
+  deleteResult: {
+    ios: (n: number) =>
+      n === 1
+        ? "Moved to Recently Deleted."
+        : `${n.toLocaleString()} photos moved to Recently Deleted.`,
+    androidNew: (n: number) =>
+      n === 1 ? "Moved to Trash." : `${n.toLocaleString()} photos moved to Trash.`,
+    androidOld: (n: number) =>
+      n === 1 ? "Deleted." : `${n.toLocaleString()} photos deleted.`,
   },
   theater: {
     sourceLabel: {
@@ -142,10 +189,14 @@ export const strings = {
       gridSize: "Grid size",
       duration: "Duration",
       transition: "Transition",
+      // Decoupled from "Replay onboarding": resetting the guide should not
+      // also throw the user back through the permission cards.
+      slideshowGestures: "Slideshow gestures",
       version: "Version",
       replayOnboarding: "Replay onboarding",
       acknowledgements: "Acknowledgements",
     },
+    gestureGuideReset: "Gestures will show again.",
     themeModeLabels: {
       auto: "Automatic",
       light: "Light",

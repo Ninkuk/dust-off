@@ -20,6 +20,7 @@ import { SortSheet } from "@/components/sort-sheet";
 import { ThemeModeSheet } from "@/components/theme-mode-sheet";
 import { strings } from "@/lib/strings";
 import { usePreferencesStore } from "@/state/preferences-store";
+import { useToastStore } from "@/state/toast-store";
 import { type, useTheme } from "@/theme";
 
 export default function SettingsScreen() {
@@ -46,6 +47,16 @@ export default function SettingsScreen() {
   const replayOnboarding = () => {
     resetFlags();
     router.replace("/onboarding");
+  };
+
+  // Clears only the guide flag, so the next slideshow re-teaches the gestures
+  // without sending the user back through onboarding and the permission cards.
+  const replayGestureGuide = () => {
+    setPreference("seenSlideshowGuide", false);
+    useToastStore.getState().show({
+      kind: "flash",
+      message: strings.settings.gestureGuideReset,
+    });
   };
 
   return (
@@ -107,6 +118,10 @@ export default function SettingsScreen() {
             label={strings.settings.rows.transition}
             value={strings.settings.slideTransitionLabels[slideTransition]}
             onPress={() => transitionSheetRef.current?.present()}
+          />
+          <SettingsRow
+            label={strings.settings.rows.slideshowGestures}
+            onPress={replayGestureGuide}
           />
         </SettingsSection>
 

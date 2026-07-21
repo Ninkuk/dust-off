@@ -9,12 +9,14 @@ import {
 import Animated, {
   runOnJS,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
+import { strings } from "@/lib/strings";
 import { usePreferencesStore } from "@/state/preferences-store";
-import { theaterMotion } from "@/theme";
+import { reducedMotion, theaterMotion } from "@/theme";
 
 const CROSS_FADE_MS = 400;
 
@@ -40,6 +42,7 @@ export function TheaterViewer({
   onDoubleTap,
   onImageError,
   onPinchStart,
+  accessibilityLabel,
 }: {
   asset: Asset;
   onPrev: () => void;
@@ -52,6 +55,8 @@ export function TheaterViewer({
   onDoubleTap: () => void;
   onImageError?: () => void;
   onPinchStart?: () => void;
+  /** Describes the current photo and queue position to assistive tech. */
+  accessibilityLabel?: string;
 }) {
   const { width } = useWindowDimensions();
 
@@ -68,6 +73,8 @@ export function TheaterViewer({
   // Horizontal nav + swipe-down dismiss
   const pageX = useSharedValue(0);
   const dismissY = useSharedValue(0);
+
+  const reduceMotion = useReducedMotion();
 
   // Drives <LongPressRing>
   const direction = useSharedValue<"none" | "horiz" | "vert">("none");
@@ -116,7 +123,12 @@ export function TheaterViewer({
     const front = frontIsA ? slotA : slotB;
     if (front?.id === asset.id) return; // already showing it
     const transition = usePreferencesStore.getState().slideTransition;
-    const duration = transition === "cross-fade" ? CROSS_FADE_MS : 0;
+    // Reduce Motion collapses the fade without forcing the user to discover
+    // Settings → Transition → "Hard cut" for themselves.
+    const duration =
+      transition === "cross-fade" && !reduceMotion
+        ? CROSS_FADE_MS
+        : reducedMotion.instant;
     if (frontIsA) {
       setSlotB(asset);
       opacityA.value = withTiming(0, { duration });
@@ -299,7 +311,43 @@ export function TheaterViewer({
 
   return (
     <GestureDetector gesture={composed}>
-      <Animated.View style={[styles.surface, animatedStyle]}>
+      {/* The gesture surface is the product; without these props a screen
+          reader can reach the theater and then operate none of it. "adjustable"
+          maps VoiceOver's swipe-up/down onto next/previous, and magic-tap onto
+          favourite, so every gesture has a non-gestural equivalent. */}
+      <Animated.View
+        accessible
+        accessibilityRole="adjustable"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint={strings.theater.doubleTapA11y}
+        accessibilityActions={[
+          { name: "increment", label: strings.theater.nextA11y },
+          { name: "decrement", label: strings.theater.prevA11y },
+          { name: "activate", label: strings.theater.playPauseA11y },
+          { name: "longpress", label: strings.theater.longPressA11y },
+          { name: "magicTap", label: strings.theater.doubleTapA11y },
+        ]}
+        onAccessibilityAction={(event) => {
+          switch (event.nativeEvent.actionName) {
+            case "increment":
+              onNext();
+              break;
+            case "decrement":
+              onPrev();
+              break;
+            case "activate":
+              onTapCenter();
+              break;
+            case "longpress":
+              onLongPressCommit();
+              break;
+            case "magicTap":
+              onDoubleTap();
+              break;
+          }
+        }}
+        style={[styles.surface, animatedStyle]}
+      >
         <Animated.View
           style={[styles.layer, styleA]}
           pointerEvents="none"

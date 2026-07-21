@@ -35,14 +35,24 @@ export function TheaterChrome({
   // info sheet is active, regardless of play state.
   const shouldShow = !isPlaying || isSheetOpen;
   const opacity = useSharedValue(shouldShow ? 1 : 0);
+  // The toast pill is centred at the same inset as this bar, so only the
+  // left-hand source/position text actually collides with it. Previously the
+  // whole bar was unmounted, which also removed the close button — the one
+  // control a user is most likely to want immediately after deleting a photo.
+  const labelOpacity = useSharedValue(toastActive ? 0 : 1);
 
   useEffect(() => {
     opacity.value = withTiming(shouldShow ? 1 : 0, { duration: FADE_MS });
   }, [shouldShow, opacity]);
 
-  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  useEffect(() => {
+    labelOpacity.value = withTiming(toastActive ? 0 : 1, {
+      duration: FADE_MS,
+    });
+  }, [toastActive, labelOpacity]);
 
-  if (toastActive) return null;
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
+  const labelStyle = useAnimatedStyle(() => ({ opacity: labelOpacity.value }));
 
   return (
     <Animated.View
@@ -54,13 +64,15 @@ export function TheaterChrome({
       ]}
     >
       <View style={styles.row}>
-        <Text style={[type.body, { color: theme.textPrimary }]}>{source}</Text>
-        <Text style={[type.body, styles.dot, { color: theme.textPrimary }]}>
-          {" · "}
-        </Text>
-        <Text style={[type.body, tabularNums, { color: theme.textPrimary }]}>
-          {position}
-        </Text>
+        <Animated.View style={[styles.label, labelStyle]}>
+          <Text style={[type.body, { color: theme.textPrimary }]}>{source}</Text>
+          <Text style={[type.body, styles.dot, { color: theme.textPrimary }]}>
+            {" · "}
+          </Text>
+          <Text style={[type.body, tabularNums, { color: theme.textPrimary }]}>
+            {position}
+          </Text>
+        </Animated.View>
         <View style={styles.spacer} />
         <Pressable
           onPress={onClose}
@@ -85,6 +97,10 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.4)",
   },
   row: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  label: {
     flexDirection: "row",
     alignItems: "center",
   },

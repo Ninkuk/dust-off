@@ -9,7 +9,7 @@ import { usePermissionQuery } from "@/queries/use-permission-query";
 export default function DeniedScreen() {
   const { data: permission } = usePermissionQuery();
   const insets = useSafeAreaInsets();
-  if (isPermissionCleared(permission)) return <Redirect href="/" />;
+  if (isPermissionCleared(permission?.status)) return <Redirect href="/" />;
   return (
     <View
       style={[

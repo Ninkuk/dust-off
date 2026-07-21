@@ -1,23 +1,14 @@
-import { Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
-import MediaLibrary from "@/lib/media-library";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { InkPill } from "@/components/ink-pill";
+import { presentPhotoAccessPicker } from "@/lib/photo-access";
 import { strings } from "@/lib/strings";
-import { tabularNums, type, useTheme } from "@/theme";
+import { ink, tabularNums, type, useTheme } from "@/theme";
 
-export function PartialAccessBanner({
-  shared,
-  total,
-}: {
-  shared: number;
-  total: number;
-}) {
+export function PartialAccessBanner({ shared }: { shared: number }) {
   const theme = useTheme();
 
-  const handleUpdate = async () => {
-    if (Platform.OS === "ios") {
-      await MediaLibrary.presentPermissionsPickerAsync().catch(() => {});
-      return;
-    }
-    Linking.openSettings().catch(() => {});
+  const handleUpdate = () => {
+    presentPhotoAccessPicker();
   };
 
   return (
@@ -34,7 +25,7 @@ export function PartialAccessBanner({
         style={[type.caption, tabularNums, styles.label, { color: theme.textPrimary }]}
         numberOfLines={1}
       >
-        {strings.partialAccess.label(shared, total)}
+        {strings.partialAccess.label(shared)}
       </Text>
       <Pressable
         accessibilityRole="button"
@@ -43,9 +34,14 @@ export function PartialAccessBanner({
         hitSlop={8}
         style={({ pressed }) => [styles.action, { opacity: pressed ? 0.6 : 1 }]}
       >
-        <Text style={[type.caption, { color: theme.accent }]}>
-          {strings.partialAccess.update}
-        </Text>
+        {/* Fixed dark chrome rather than accent-on-surface: the warm gold is
+            1.57:1 on the light shell, which made this the least visible control
+            on the only screen that can widen access. */}
+        <InkPill size="chip">
+          <Text style={[type.caption, { color: ink.textPrimary }]}>
+            {strings.partialAccess.update}
+          </Text>
+        </InkPill>
       </Pressable>
     </View>
   );

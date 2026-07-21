@@ -20,6 +20,10 @@ export type Theme = {
   surface: string;
   textPrimary: string;
   accent: string;
+  // Content drawn on top of `accent`. The warm gold is a light surface in every
+  // appearance mode, so this stays dark in all themes — it must not follow
+  // `surface`, which is what made light mode render white-on-gold at 1.57:1.
+  onAccent: string;
   danger: string;
   isDark: boolean;
   zone: Zone;
@@ -29,6 +33,7 @@ export const lightTheme: Theme = {
   surface: colors.surface.shellLight,
   textPrimary: colors.text.onLight,
   accent: colors.accent.warm,
+  onAccent: colors.text.onLight,
   danger: colors.danger,
   isDark: false,
   zone: "shell",
@@ -38,6 +43,7 @@ export const darkShellTheme: Theme = {
   surface: colors.surface.shellDark,
   textPrimary: colors.text.onDark,
   accent: colors.accent.warm,
+  onAccent: colors.text.onLight,
   danger: colors.danger,
   isDark: true,
   zone: "shell",
@@ -47,6 +53,7 @@ export const theaterTheme: Theme = {
   surface: colors.surface.theater,
   textPrimary: colors.text.onDark,
   accent: colors.accent.warm,
+  onAccent: colors.text.onLight,
   danger: colors.danger,
   isDark: true,
   zone: "theater",

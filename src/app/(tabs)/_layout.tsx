@@ -35,7 +35,8 @@ export default function TabsLayout() {
   const { data: permission } = usePermissionQuery();
 
   if (!hasSeenOnboarding) return <Redirect href="/onboarding" />;
-  if (!isPermissionCleared(permission)) return <Redirect href="/denied" />;
+  if (!isPermissionCleared(permission?.status))
+    return <Redirect href="/denied" />;
 
   // Selection signal is pure textPrimary contrast (black on light, near-
   // white on dark); the shuffle button mirrors this same chrome so the

@@ -1,7 +1,9 @@
 import { useState } from "react";
 import {
   Dimensions,
+  Pressable,
   StyleSheet,
+  Text,
   View,
   type LayoutChangeEvent,
 } from "react-native";
@@ -11,6 +13,7 @@ import {
 } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
+  runOnJS,
   type SharedValue,
   useAnimatedStyle,
   useSharedValue,
@@ -20,7 +23,7 @@ import Animated, {
 import { EmptyState } from "@/components/empty-state";
 import { useOnboardingComplete } from "@/actions/use-onboarding-complete";
 import { strings } from "@/lib/strings";
-import { theaterMotion, useTheme } from "@/theme";
+import { theaterMotion, type, useTheme } from "@/theme";
 
 const SWIPE_THRESHOLD = 0.25;
 
@@ -32,12 +35,17 @@ export default function OnboardingScreen() {
   const translateX = useSharedValue(0);
   const indexShared = useSharedValue(0);
 
+  // Mirrored in React state so the page indicator and Skip control can be
+  // described to assistive tech; the shared value alone never reaches JS.
+  const [index, setIndex] = useState(0);
+
   const cards = [
     { key: "card1", title: strings.onboarding.card1 },
     { key: "card2", title: strings.onboarding.card2 },
     {
       key: "prePrompt",
       title: strings.onboarding.prePrompt,
+      subtitle: strings.onboarding.prePromptBody,
       action: { label: strings.onboarding.continue, onPress: onComplete },
     },
   ];
@@ -46,6 +54,7 @@ export default function OnboardingScreen() {
   const goTo = (next: number) => {
     "worklet";
     indexShared.value = next;
+    runOnJS(setIndex)(next);
     translateX.value = withSpring(-next * width, theaterMotion.spring);
   };
 
@@ -92,13 +101,40 @@ export default function OnboardingScreen() {
         <Animated.View style={[styles.track, trackStyle]}>
           {cards.map((c) => (
             <View key={c.key} style={[styles.page, { width }]}>
-              <EmptyState title={c.title} action={c.action} />
+              <EmptyState
+                title={c.title}
+                subtitle={c.subtitle}
+                action={c.action}
+              />
             </View>
           ))}
         </Animated.View>
       </GestureDetector>
 
+      {index < lastIndex ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={strings.onboarding.skip}
+          onPress={() => goTo(lastIndex)}
+          hitSlop={12}
+          style={({ pressed }) => [
+            styles.skip,
+            { top: insets.top + 12, opacity: pressed ? 0.6 : 1 },
+          ]}
+        >
+          <Text style={[type.body, { color: theme.textPrimary }]}>
+            {strings.onboarding.skip}
+          </Text>
+        </Pressable>
+      ) : null}
+
       <View
+        accessible
+        accessibilityRole="adjustable"
+        accessibilityLabel={strings.onboarding.pageA11y(
+          index + 1,
+          cards.length,
+        )}
         style={[styles.dots, { bottom: insets.bottom + 24 }]}
         pointerEvents="none"
       >
@@ -136,6 +172,14 @@ const styles = StyleSheet.create({
   root: { flex: 1, overflow: "hidden" },
   track: { flex: 1, flexDirection: "row" },
   page: { height: "100%" },
+  skip: {
+    position: "absolute",
+    right: 24,
+    minHeight: 44,
+    minWidth: 44,
+    alignItems: "flex-end",
+    justifyContent: "center",
+  },
   dots: {
     position: "absolute",
     left: 0,

@@ -9,7 +9,9 @@ import { useStartSlideshow } from "@/actions/use-start-slideshow";
 import { useStartSlideshowFromSelection } from "@/actions/use-start-slideshow-from-selection";
 import { BottomChromeScrim } from "@/components/bottom-chrome-scrim";
 import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
 import { GalleryGrid } from "@/components/gallery-grid";
+import { LoadingState } from "@/components/loading-state";
 import { MorphingPill } from "@/components/morphing-pill";
 import { SortStrip } from "@/components/sort-strip";
 import { useSelectionBackHandler } from "@/hooks/use-selection-back-handler";
@@ -133,7 +135,11 @@ export default function AlbumGalleryScreen() {
         onCancel={cancelSelection}
         onBack={handleBack}
       />
-      {!ready ? null : sortedAssets.length === 0 ? (
+      {albumQuery.isError && !isFavorites ? (
+        <ErrorState onRetry={() => albumQuery.refetch()} />
+      ) : !ready ? (
+        <LoadingState />
+      ) : sortedAssets.length === 0 ? (
         <EmptyState title={strings.emptyStates.nothingYet} />
       ) : (
         <GalleryGrid

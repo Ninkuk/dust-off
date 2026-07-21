@@ -26,16 +26,39 @@ export function getDeleteConfirm(
   const title = count === 1 ? c.titleSingle : c.titleBulk(count);
   const body =
     platform === "ios"
-      ? c.bodyIos
+      ? c.bodyIos(count)
       : platform === "android-new"
-        ? c.bodyAndroidNew
-        : c.bodyAndroidOld;
+        ? c.bodyAndroidNew(count)
+        : c.bodyAndroidOld(count);
   return {
     title,
     body,
     destructiveLabel: c.delete(count),
     cancelLabel: c.cancel,
   };
+}
+
+/**
+ * True when the platform shows its own delete confirmation during
+ * `deleteAssetsAsync`. Callers must NOT optimistically remove assets from the
+ * cache in that case: the user has not consented yet, and cancelling the system
+ * dialog would make tiles vanish and flicker back.
+ */
+export function osConfirmsDelete(
+  platform: DeletePlatform = getDeletePlatform(),
+): boolean {
+  return platform !== "android-old";
+}
+
+/** Post-delete confirmation copy naming where the photos actually went. */
+export function getDeleteResultMessage(
+  count: number,
+  platform: DeletePlatform = getDeletePlatform(),
+): string {
+  const r = strings.deleteResult;
+  if (platform === "ios") return r.ios(count);
+  if (platform === "android-new") return r.androidNew(count);
+  return r.androidOld(count);
 }
 
 // Only Android <11 has no OS-level trash dialog after deleteAssetsAsync — on
