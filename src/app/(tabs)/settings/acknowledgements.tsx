@@ -25,7 +25,6 @@ const LICENSES: readonly License[] = [
   { name: "react-native-share", license: "MIT" },
   { name: "react-native-worklets", license: "MIT" },
   { name: "@gorhom/bottom-sheet", license: "MIT" },
-  { name: "@nandorojo/galeria", license: "MIT" },
   { name: "@shopify/flash-list", license: "MIT" },
   { name: "@tanstack/react-query", license: "MIT" },
   { name: "@react-navigation/*", license: "MIT" },
