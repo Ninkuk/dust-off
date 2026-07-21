@@ -37,6 +37,7 @@
     "seed:android": "bash scripts/seed-android-emulator.sh",
     "seed:ios": "bash scripts/seed-ios-simulator.sh",
     "lint": "expo lint",
+    "typecheck": "tsc --noEmit",
     "react-doctor": "npx react-doctor@latest"
   },
   "dependencies": {
