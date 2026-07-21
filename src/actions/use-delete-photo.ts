@@ -6,6 +6,7 @@ import {
 import { confirmDeleteIfNeeded } from "@/lib/delete-confirm";
 import MediaLibrary from "@/lib/media-library";
 import { strings } from "@/lib/strings";
+import { useFavoritesStore } from "@/state/favorites-store";
 import { useToastStore } from "@/state/toast-store";
 
 export function useDeletePhoto() {
@@ -20,13 +21,19 @@ export function useDeletePhoto() {
         restoreCache(snapshot);
         return;
       }
+      useFavoritesStore.getState().removeFavorite(id);
       useToastStore.getState().show({
         kind: "flash",
         message: strings.toast.gone,
       });
       onAdvance();
-    } catch {
+    } catch (e) {
       restoreCache(snapshot);
+      console.warn("[delete] deleteAssetsAsync failed", e);
+      useToastStore.getState().show({
+        kind: "flash",
+        message: strings.toast.deleteFailed,
+      });
     }
   }, []);
 }
