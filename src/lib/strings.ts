@@ -71,6 +71,7 @@ export const strings = {
     gone: "Gone.",
     reshuffled: "Reshuffled.",
     shareFailed: "Couldn't share.",
+    deleteFailed: "Couldn't delete.",
   },
   deleteConfirm: {
     titleSingle: "Delete photo?",

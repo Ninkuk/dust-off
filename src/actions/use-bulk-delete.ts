@@ -6,6 +6,7 @@ import {
 } from "@/lib/delete-cache";
 import MediaLibrary from "@/lib/media-library";
 import { strings } from "@/lib/strings";
+import { useFavoritesStore } from "@/state/favorites-store";
 import { useSelectionStore } from "@/state/selection-store";
 import { useToastStore } from "@/state/toast-store";
 
@@ -30,12 +31,18 @@ export function useBulkDelete() {
         useSelectionStore.getState().cancel();
         return;
       }
+      useFavoritesStore.getState().removeFavorites([...ids]);
       useToastStore.getState().show({
         kind: "flash",
         message: strings.toast.gone,
       });
-    } catch {
+    } catch (e) {
       restoreCache(snapshot);
+      console.warn("[delete] deleteAssetsAsync failed", e);
+      useToastStore.getState().show({
+        kind: "flash",
+        message: strings.toast.deleteFailed,
+      });
     }
     useSelectionStore.getState().cancel();
   }, []);
