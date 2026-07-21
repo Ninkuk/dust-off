@@ -72,6 +72,7 @@ export const strings = {
     reshuffled: "Reshuffled.",
     shareFailed: "Couldn't share.",
     deleteFailed: "Couldn't delete.",
+    slideshowFailed: "Couldn't start the slideshow.",
   },
   deleteConfirm: {
     titleSingle: "Delete photo?",
