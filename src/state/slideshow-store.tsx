@@ -52,7 +52,11 @@ const initialState: SlideshowState = {
   generation: 0,
 };
 
-function createSlideshowStore(): StoreApi<SlideshowStore> {
+// Exported for tests only: the store is otherwise instantiated per-mount by
+// SlideshowStoreProvider (below) and consumed through the Context hooks. A
+// factory export lets tests drive a fresh, isolated store without rendering
+// a component tree.
+export function createSlideshowStore(): StoreApi<SlideshowStore> {
   let timerId: ReturnType<typeof setTimeout> | null = null;
 
   return createStore<SlideshowStore>()((set, get) => {
@@ -73,13 +77,35 @@ function createSlideshowStore(): StoreApi<SlideshowStore> {
       }, durationMs);
     };
 
-    const reshuffleQueue = (): readonly string[] => {
-      const ids = get().unshuffledIds;
+    // `idsOverride` lets skipUnavailable() supply its already-filtered
+    // unshuffledIds list — at that call site `set()` hasn't happened yet, so
+    // `get().unshuffledIds` would still be stale (it would include the id
+    // being skipped).
+    const reshuffleQueue = (
+      excludeHeadId?: string,
+      idsOverride?: readonly string[],
+    ): readonly string[] => {
+      const ids = idsOverride ?? get().unshuffledIds;
       if (ids.length === 0) return ids;
       // Fresh seed at exhaustion — same `useGalleryStore.seed` would re-emit
       // the original order. S-5 wants a *new* shuffle; S-6 forbids persistence,
       // so a one-shot Date.now seed is correct.
-      return seededShuffle([...ids], Date.now() | 0);
+      const out = seededShuffle([...ids], Date.now() | 0);
+      // Avoid showing the just-displayed photo again immediately: if the
+      // fresh shuffle happens to put it back at the head, swap it to the tail.
+      if (
+        out.length > 1 &&
+        excludeHeadId !== undefined &&
+        out[0] === excludeHeadId
+      ) {
+        const swapped = [...out];
+        [swapped[0], swapped[swapped.length - 1]] = [
+          swapped[swapped.length - 1],
+          swapped[0],
+        ];
+        return swapped;
+      }
+      return out;
     };
 
     return {
@@ -126,8 +152,9 @@ function createSlideshowStore(): StoreApi<SlideshowStore> {
         const { queue, index, isPlaying } = get();
         if (queue.length === 0) return;
         if (index >= queue.length - 1) {
-          // S-5: silent reshuffle and continue.
-          const newQueue = reshuffleQueue();
+          // S-5: silent reshuffle and continue. Exclude the photo currently
+          // on screen so it can't land right back at the new head.
+          const newQueue = reshuffleQueue(queue[index]);
           set({
             queue: newQueue,
             index: 0,
@@ -147,10 +174,10 @@ function createSlideshowStore(): StoreApi<SlideshowStore> {
       },
 
       reshuffle: () => {
-        const { unshuffledIds, queue, isPlaying } = get();
+        const { unshuffledIds, queue, index, isPlaying } = get();
         if (unshuffledIds.length === 0 || queue.length === 0) return;
         clearTimer();
-        const newQueue = reshuffleQueue();
+        const newQueue = reshuffleQueue(queue[index]);
         set({
           queue: newQueue,
           index: 0,
@@ -181,10 +208,11 @@ function createSlideshowStore(): StoreApi<SlideshowStore> {
         // were at the original tail, that overshoots — wrap with reshuffle
         // so S-5 still holds.
         if (index >= newQueue.length) {
-          const reshuffled = seededShuffle(
-            [...newUnshuffled],
-            Date.now() | 0,
-          );
+          // Most recently shown surviving photo — queue[index] is the one
+          // being skipped, so its predecessor is the last thing the user
+          // actually saw. None exists if we were already at the head.
+          const lastShown = index > 0 ? queue[index - 1] : undefined;
+          const reshuffled = reshuffleQueue(lastShown, newUnshuffled);
           set({
             queue: reshuffled,
             unshuffledIds: newUnshuffled,
