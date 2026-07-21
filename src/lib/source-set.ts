@@ -8,7 +8,6 @@ export type SourceSet =
   | {
       kind: "union";
       albumIds: string[];
-      includeAll: boolean;
       includeFavorites: boolean;
     }
   | { kind: "ids"; ids: readonly string[] };
@@ -44,7 +43,6 @@ export type SourceSetKey =
   | {
       kind: "union";
       albumIds: readonly string[];
-      includeAll: boolean;
       includeFavorites: boolean;
     };
 
@@ -58,7 +56,6 @@ export function sourceSetKey(s: SourceSet): SourceSetKey {
       return {
         kind: "union",
         albumIds: [...s.albumIds].sort(),
-        includeAll: s.includeAll,
         includeFavorites: s.includeFavorites,
       };
     case "ids":

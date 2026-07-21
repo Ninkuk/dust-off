@@ -32,9 +32,6 @@ export async function resolveSourceSet(
   }
   // Union: build the membership Set from each enabled source in parallel.
   const idSet = new Set<string>();
-  if (source.includeAll) {
-    for (const a of allAssets) idSet.add(a.id);
-  }
   if (source.includeFavorites) {
     const favs = useFavoritesStore.getState().favorites;
     for (const id of favs) idSet.add(id);
@@ -81,11 +78,4 @@ export function readAllAssets(queryClient: QueryClient): readonly Asset[] {
     assetsQueryKey({ kind: "all" }),
   );
   return data?.pages.flatMap((p) => p.assets) ?? [];
-}
-
-export function readAllPhotosCount(queryClient: QueryClient): number {
-  const data = queryClient.getQueryData<{ pages: PagedInfo<Asset>[] }>(
-    assetsQueryKey({ kind: "all" }),
-  );
-  return data?.pages?.[0]?.totalCount ?? 0;
 }

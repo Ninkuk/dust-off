@@ -21,7 +21,7 @@ Most people have thousands of photos sitting on their phone they never scroll ba
 - State: TanStack Query (server-ish) + Zustand `persist` (preferences, favorites) + plain Zustand (transient)
 - Lists: `@shopify/flash-list`; Images: `expo-image`
 - Animations + gestures: `react-native-reanimated` 4.x + `react-native-gesture-handler` 2.30 (powers the custom theater viewer's tap-zones, pinch-pan, swipe-down dismiss, long-press menu)
-- Sheets: `@gorhom/bottom-sheet` (sort, grid size, slide duration/transition, theme, source picker, photo info)
+- Sheets: `@gorhom/bottom-sheet` (sort, grid size, slide duration/transition, theme, photo info)
 - The shuffle pill's flowing gold ring is drawn with `@shopify/react-native-skia` + `react-native-animated-glow`
 - Sharing: `react-native-share` + `expo-sharing`, always routed through the OS share sheet
 

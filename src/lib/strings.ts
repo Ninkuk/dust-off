@@ -55,10 +55,7 @@ export const strings = {
   pill: {
     shuffleAll: "Shuffle All",
     shuffleAlbum: (title: string) => `Shuffle ${title}`,
-    shuffleA11y: "Shuffle",
     shuffleSelected: (n: number) => `Shuffle (${n})`,
-    shuffleSelectedA11y: (n: number) =>
-      `Shuffle ${n} selected ${n === 1 ? "source" : "sources"}`,
     slideshowSelectionA11y: (n: number) =>
       `Play slideshow of ${n} selected photos`,
     favoriteSelectionA11y: (n: number) => `Favorite ${n} selected photos`,

@@ -36,7 +36,6 @@ export function useStartSlideshowFromAlbumSelection() {
           : {
               kind: "union",
               albumIds,
-              includeAll: false,
               includeFavorites,
             };
 
