@@ -89,27 +89,39 @@ export default function TheaterScreen() {
   });
 
   // Bridge store consumed once via lazy useState init. The bridge holds the
-  // resolved ID list for kind=union (picker) or kind=selection (action), then
-  // self-clears so a remount can't re-consume stale data. Lazy init is
-  // load-bearing: a useEffect-based consumer would expose a frame where
-  // assets is empty, tripping the router.back() guard below.
-  const [bridgeIds] = useState<ReadonlySet<string> | null>(() => {
-    if (kind !== "union" && kind !== "selection") return null;
-    const ids = useSlideshowInputStore.getState().takeInput();
-    return new Set(ids ?? []);
+  // resolved ID list for kind=selection (action) or the resolved Asset list
+  // for kind=union (picker — see slideshow-input-store.ts for why union
+  // needs full Assets, not just IDs), then self-clears so a remount can't
+  // re-consume stale data. Lazy init is load-bearing: a useEffect-based
+  // consumer would expose a frame where assets is empty, tripping the
+  // router.back() guard below.
+  const [bridge] = useState<{
+    ids: ReadonlySet<string> | null;
+    assets: readonly Asset[] | null;
+  }>(() => {
+    if (kind === "union") {
+      const assets = useSlideshowInputStore.getState().takeAssets();
+      return { ids: null, assets };
+    }
+    if (kind === "selection") {
+      const ids = useSlideshowInputStore.getState().takeInput();
+      return { ids: new Set(ids ?? []), assets: null };
+    }
+    return { ids: null, assets: null };
   });
 
   const assets: Asset[] = useMemo(() => {
     if (kind === "favorites") return favoritesQuery.data;
     if (kind === "album")
       return albumQuery.data?.pages.flatMap((p) => p.assets) ?? [];
+    if (kind === "union") return [...(bridge.assets ?? [])];
     const all = allQuery.data?.pages.flatMap((p) => p.assets) ?? [];
-    if (kind === "union" || kind === "selection") {
-      if (!bridgeIds || bridgeIds.size === 0) return [];
-      return all.filter((a) => bridgeIds.has(a.id));
+    if (kind === "selection") {
+      if (!bridge.ids || bridge.ids.size === 0) return [];
+      return all.filter((a) => bridge.ids?.has(a.id));
     }
     return all;
-  }, [kind, allQuery.data, albumQuery.data, favoritesQuery.data, bridgeIds]);
+  }, [kind, allQuery.data, albumQuery.data, favoritesQuery.data, bridge]);
 
   const indexById = useMemo(() => {
     const m = new Map<string, number>();
