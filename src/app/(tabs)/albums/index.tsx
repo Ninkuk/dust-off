@@ -9,6 +9,8 @@ import { useStartSlideshowFromAlbumSelection } from "@/actions/use-start-slidesh
 import { AlbumShufflePill } from "@/components/album-shuffle-pill";
 import { AlbumsGrid, type AlbumsGridItem } from "@/components/albums-grid";
 import { BottomChromeScrim } from "@/components/bottom-chrome-scrim";
+import { ErrorState } from "@/components/error-state";
+import { LoadingState } from "@/components/loading-state";
 import { PartialAccessBanner } from "@/components/partial-access-banner";
 import { isPermissionLimited } from "@/lib/permission";
 import { FAVORITES_ALBUM_ID } from "@/lib/source-set";
@@ -132,24 +134,33 @@ export default function AlbumsScreen() {
         )}
       </View>
       {limited ? (
-        <PartialAccessBanner shared={sharedCount} total={sharedCount} />
+        <PartialAccessBanner shared={sharedCount} />
       ) : null}
-      <AlbumsGrid
-        items={items}
-        seed={seed}
-        onPressFavorites={() =>
-          router.push({
-            pathname: "/albums/[albumId]",
-            params: { albumId: FAVORITES_ALBUM_ID },
-          })
-        }
-        onPressAlbum={(album: Album) =>
-          router.push({
-            pathname: "/albums/[albumId]",
-            params: { albumId: album.id },
-          })
-        }
-      />
+      {albumsQuery.isError ? (
+        <ErrorState
+          title={strings.errorStates.albumsTitle}
+          onRetry={() => albumsQuery.refetch()}
+        />
+      ) : albumsQuery.isLoading ? (
+        <LoadingState />
+      ) : (
+        <AlbumsGrid
+          items={items}
+          seed={seed}
+          onPressFavorites={() =>
+            router.push({
+              pathname: "/albums/[albumId]",
+              params: { albumId: FAVORITES_ALBUM_ID },
+            })
+          }
+          onPressAlbum={(album: Album) =>
+            router.push({
+              pathname: "/albums/[albumId]",
+              params: { albumId: album.id },
+            })
+          }
+        />
+      )}
       <BottomChromeScrim />
       <AlbumShufflePill onShuffle={startFromAlbumSelection} />
     </View>

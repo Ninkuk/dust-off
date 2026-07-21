@@ -10,13 +10,16 @@ import { useStartSlideshow } from "@/actions/use-start-slideshow";
 import { useStartSlideshowFromSelection } from "@/actions/use-start-slideshow-from-selection";
 import { BottomChromeScrim } from "@/components/bottom-chrome-scrim";
 import { EmptyState } from "@/components/empty-state";
+import { ErrorState } from "@/components/error-state";
 import { GalleryGrid } from "@/components/gallery-grid";
+import { LoadingState } from "@/components/loading-state";
 import { MorphingPill } from "@/components/morphing-pill";
 import { PartialAccessBanner } from "@/components/partial-access-banner";
 import { SortStrip } from "@/components/sort-strip";
 import { useFirstReveal } from "@/hooks/use-first-reveal";
 import { useSelectionBackHandler } from "@/hooks/use-selection-back-handler";
 import { isPermissionLimited } from "@/lib/permission";
+import { presentPhotoAccessPicker } from "@/lib/photo-access";
 import { seededShuffle } from "@/lib/seeded-shuffle";
 import { firstParam } from "@/lib/route-params";
 import { strings } from "@/lib/strings";
@@ -92,6 +95,9 @@ export default function GalleryScreen() {
   const handleDeleteAll = () => bulkDelete([...selectedIds]);
   const handleShuffle = () =>
     startSlideshow({ source: "all", assets: allAssets });
+  const handleChoosePhotos = () => {
+    presentPhotoAccessPicker();
+  };
   const handleSlideshowSelection = () => startFromSelection(allAssets);
   const handleOpenPhoto = useCallback((id: string) => {
     router.push({
@@ -138,11 +144,23 @@ export default function GalleryScreen() {
           inline
         />
       </View>
-      {limited ? (
-        <PartialAccessBanner shared={sharedCount} total={sharedCount} />
-      ) : null}
-      {!firstPageReady ? null : sortedAssets.length === 0 ? (
-        <EmptyState title={strings.emptyStates.nothingYet} />
+      {limited ? <PartialAccessBanner shared={sharedCount} /> : null}
+      {query.isError ? (
+        <ErrorState onRetry={() => query.refetch()} />
+      ) : !firstPageReady ? (
+        <LoadingState />
+      ) : sortedAssets.length === 0 ? (
+        <EmptyState
+          title={strings.emptyStates.nothingYet}
+          action={
+            limited
+              ? {
+                  label: strings.partialAccess.update,
+                  onPress: handleChoosePhotos,
+                }
+              : undefined
+          }
+        />
       ) : (
         <GalleryGrid
           assets={sortedAssets}

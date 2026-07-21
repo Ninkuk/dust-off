@@ -1,8 +1,8 @@
 import { router } from "expo-router";
-import type { PermissionStatus } from "expo-media-library";
 import MediaLibrary from "@/lib/media-library";
 import { isPermissionCleared } from "@/lib/permission";
 import { queryClient } from "@/lib/query-client";
+import type { PermissionState } from "@/queries/use-permission-query";
 import { usePreferencesStore } from "@/state/preferences-store";
 
 export function useOnboardingComplete(): () => Promise<void> {
@@ -11,8 +11,14 @@ export function useOnboardingComplete(): () => Promise<void> {
     // doesn't re-show the cards on next launch (the system dialog can
     // resurface on its own). Per SM-13.
     usePreferencesStore.getState().setPreference("hasSeenOnboarding", true);
-    const { status } = await MediaLibrary.requestPermissionsAsync();
-    queryClient.setQueryData<PermissionStatus>(["permission"], status);
-    router.replace(isPermissionCleared(status) ? "/" : "/denied");
+    const result = await MediaLibrary.requestPermissionsAsync();
+    // Must match the shape usePermissionQuery stores. Seeding a bare status
+    // here would leave every reader's `.status` undefined, bouncing a user who
+    // just granted access straight to /denied.
+    queryClient.setQueryData<PermissionState>(["permission"], {
+      status: result.status,
+      accessPrivileges: result.accessPrivileges,
+    });
+    router.replace(isPermissionCleared(result.status) ? "/" : "/denied");
   };
 }

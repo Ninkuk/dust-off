@@ -71,6 +71,25 @@ export function GalleryTile({
         onPress={handlePress}
         accessibilityRole={handlePress ? "button" : undefined}
         accessibilityState={handlePress ? { selected } : undefined}
+        accessibilityLabel={strings.tile.photoA11y(
+          asset.creationTime
+            ? new Date(asset.creationTime).toLocaleDateString()
+            : undefined,
+        )}
+        // Multi-select is a long-press-and-drag pan, which has no assistive-tech
+        // equivalent — without this action bulk favourite/share/delete are
+        // unreachable for a screen-reader user.
+        accessibilityActions={[
+          { name: "select", label: strings.tile.selectA11y },
+        ]}
+        onAccessibilityAction={(event) => {
+          if (event.nativeEvent.actionName !== "select") return;
+          if (useSelectionStore.getState().toggle(asset.id)) return;
+          useToastStore.getState().show({
+            kind: "flash",
+            message: strings.selection.capToast,
+          });
+        }}
         style={styles.pressable}
       >
         <Image
@@ -91,7 +110,7 @@ export function GalleryTile({
               pointerEvents="none"
               style={[styles.checkBadge, { backgroundColor: theme.accent }]}
             >
-              <Check size={12} strokeWidth={2.5} color={theme.surface} />
+              <Check size={12} strokeWidth={2.5} color={theme.onAccent} />
             </View>
           </>
         ) : null}

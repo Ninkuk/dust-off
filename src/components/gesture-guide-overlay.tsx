@@ -10,6 +10,7 @@ import {
 import Animated, {
   Easing,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withDelay,
   withRepeat,
@@ -37,6 +38,7 @@ export function GestureGuideOverlay({ onDismiss }: { onDismiss: () => void }) {
   const swipeTravel = screenWidth * 0.5;
 
   const scrimOpacity = useSharedValue(0);
+  const reduceMotion = useReducedMotion();
   const pulse = useSharedValue(1);
   const swipeX = useSharedValue(-swipeTravel / 2);
 
@@ -49,6 +51,15 @@ export function GestureGuideOverlay({ onDismiss }: { onDismiss: () => void }) {
         easing: Easing.out(Easing.quad),
       }),
     );
+    // Two indefinite loops (glyph pulse + ghost-finger sweep) run for as long
+    // as the overlay is up. Ungated they are the first thing a Reduce Motion
+    // user meets in the theater, so the glyphs simply rest at their neutral
+    // pose instead.
+    if (reduceMotion) {
+      pulse.value = 1;
+      swipeX.value = 0;
+      return;
+    }
     pulse.value = withRepeat(
       withSequence(
         withTiming(1.15, { duration: PULSE_DURATION_MS }),
@@ -71,7 +82,7 @@ export function GestureGuideOverlay({ onDismiss }: { onDismiss: () => void }) {
       -1,
       false,
     );
-  }, [pulse, scrimOpacity, swipeX, swipeTravel]);
+  }, [pulse, scrimOpacity, swipeX, swipeTravel, reduceMotion]);
 
   const scrimStyle = useAnimatedStyle(() => ({
     opacity: scrimOpacity.value,

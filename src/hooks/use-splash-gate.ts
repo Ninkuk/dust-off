@@ -42,7 +42,7 @@ export function useSplashGate(): { ready: boolean } {
   const hasSeenOnboarding = usePreferencesStore((s) => s.hasSeenOnboarding);
   const permissionQuery = usePermissionQuery();
   const permissionSettled = !permissionQuery.isLoading;
-  const cleared = isPermissionCleared(permissionQuery.data);
+  const cleared = isPermissionCleared(permissionQuery.data?.status);
 
   const assetsQuery = useAssetsQuery({ kind: "all" }, { enabled: cleared });
   const firstPageReady = assetsQuery.data?.pages?.[0] != null;

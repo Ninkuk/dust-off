@@ -81,7 +81,7 @@ export function AlbumTile(props: AlbumTileProps) {
               pointerEvents="none"
               style={[styles.checkBadge, { backgroundColor: theme.accent }]}
             >
-              <Check size={12} strokeWidth={2.5} color={theme.surface} />
+              <Check size={12} strokeWidth={2.5} color={theme.onAccent} />
             </View>
           </>
         ) : null}

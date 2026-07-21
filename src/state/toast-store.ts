@@ -7,6 +7,10 @@ export type Toast =
 
 export const TOAST_UNDO_MS = 3000;
 export const TOAST_FLASH_MS = 1500;
+// Deletes get a longer read than an ordinary flash: the message names where
+// the photos went, and 1.5s was less time than the reversible favourite action
+// was given to offer an Undo.
+export const DELETE_TOAST_MS = 6000;
 
 type Internal = {
   toast: Toast;

@@ -340,6 +340,7 @@ export default function TheaterScreen() {
         onDoubleTap={() => favoritePhoto(current.id)}
         onImageError={() => skipUnavailable(current.id)}
         onPinchStart={pauseSlideshow}
+        accessibilityLabel={`${sourceLabel}, ${displayPosition}`}
       />
       <TheaterProgressBar />
       <LongPressRing x={ringX} y={ringY} progress={ringProgress} />

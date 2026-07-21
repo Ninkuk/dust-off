@@ -51,7 +51,7 @@ export function AlbumShufflePill({ onShuffle }: { onShuffle: () => void }) {
           label={strings.pill.shuffleSelected(count)}
           onPress={handlePress}
           bodyColor={theme.accent}
-          contentColor={theme.surface}
+          contentColor={theme.onAccent}
         />
       </Animated.View>
     </View>
