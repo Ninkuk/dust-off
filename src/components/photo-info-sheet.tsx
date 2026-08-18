@@ -1,18 +1,74 @@
-import { type BottomSheetModal, BottomSheetView } from "@gorhom/bottom-sheet";
+import {
+  type BottomSheetModal,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 import { useQuery } from "@tanstack/react-query";
+import { File } from "expo-file-system";
 import type { Asset } from "expo-media-library";
-import { forwardRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ChevronDown } from "lucide-react-native";
+import { forwardRef, type ReactNode, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, {
+  FadeIn,
+  useAnimatedStyle,
+  useReducedMotion,
+  withTiming,
+} from "react-native-reanimated";
+import {
+  formatAperture,
+  formatCamera,
+  formatColorProfile,
+  formatDate,
+  formatExposureBias,
+  formatFlash,
+  formatFocal,
+  formatIso,
+  formatMegapixels,
+  formatOrientation,
+  formatShutter,
+  formatSize,
+  formatSubtypes,
+  formatWhiteBalance,
+  normalizeExif,
+} from "@/lib/exif";
+import { toLatLng } from "@/lib/geo";
 import MediaLibrary from "@/lib/media-library";
 import { strings } from "@/lib/strings";
 import { useAlbumTitle } from "@/queries/use-albums-query";
-import { tabularNums, type, useTheme } from "@/theme";
+import {
+  reducedMotion,
+  shellMotion,
+  tabularNums,
+  type,
+  useTheme,
+} from "@/theme";
+import { LocationMap } from "./location-map";
 import { Sheet } from "./sheet";
 
 type Props = {
   asset: Asset;
   onPresentChange: (open: boolean) => void;
 };
+
+const fields = strings.theater.infoFields;
+
+async function loadAssetInfo(assetId: string) {
+  // shouldDownloadFromNetwork would let iOS pull an iCloud-offloaded original
+  // over the network just to read its metadata — keep the airplane-mode
+  // guarantee and read only what is on the device.
+  const info = await MediaLibrary.getAssetInfoAsync(assetId, {
+    shouldDownloadFromNetwork: false,
+  });
+  let fileSize: number | undefined;
+  if (info.localUri?.startsWith("file:")) {
+    try {
+      fileSize = new File(info.localUri).size ?? undefined;
+    } catch {
+      // size is best-effort; the row hides itself
+    }
+  }
+  return { info, fileSize };
+}
 
 export const PhotoInfoSheet = forwardRef<BottomSheetModal, Props>(
   function PhotoInfoSheet({ asset, onPresentChange }, ref) {
@@ -23,14 +79,23 @@ export const PhotoInfoSheet = forwardRef<BottomSheetModal, Props>(
     // the parent re-renders this component on every photo swipe.
     const infoQuery = useQuery({
       queryKey: ["asset-info", asset.id] as const,
-      queryFn: () => MediaLibrary.getAssetInfoAsync(asset.id),
+      queryFn: () => loadAssetInfo(asset.id),
       staleTime: Infinity,
       enabled: isOpen,
     });
 
-    const exif = (infoQuery.data?.exif ?? null) as
-      | Record<string, unknown>
-      | null;
+    const info = infoQuery.data?.info;
+    const exif = normalizeExif(
+      (info?.exif ?? null) as Record<string, unknown> | null,
+    );
+    const location = toLatLng(info?.location);
+
+    const dimensions = [
+      `${asset.width} × ${asset.height}`,
+      formatMegapixels(asset.width, asset.height),
+    ]
+      .filter(Boolean)
+      .join(" · ");
 
     return (
       <Sheet
@@ -41,63 +106,128 @@ export const PhotoInfoSheet = forwardRef<BottomSheetModal, Props>(
           onPresentChange(open);
         }}
       >
-        <BottomSheetView style={styles.root}>
-          <InfoRow label={strings.theater.infoFields.name} value={asset.filename} />
+        <BottomSheetScrollView contentContainerStyle={styles.root}>
+          <InfoRow label={fields.name} value={asset.filename} />
           <InfoRow
-            label={strings.theater.infoFields.dateTaken}
+            label={fields.dateTaken}
             value={formatDate(asset.creationTime)}
           />
-          <InfoRow label={strings.theater.infoFields.album} value={albumTitle} />
+          <InfoRow label={fields.album} value={albumTitle} />
+          <InfoRow label={fields.dimensions} value={dimensions} />
           <InfoRow
-            label={strings.theater.infoFields.dimensions}
-            value={`${asset.width} × ${asset.height}`}
+            label={fields.size}
+            value={formatSize(infoQuery.data?.fileSize)}
           />
           <InfoRow
-            label={strings.theater.infoFields.size}
-            value={formatSize(exif?.FileSize)}
+            label={fields.subtypes}
+            value={formatSubtypes(asset.mediaSubtypes)}
           />
-          <View style={styles.gap} />
-          <InfoRow
-            label={strings.theater.infoFields.camera}
-            value={formatCamera(exif?.Make, exif?.Model)}
-          />
-          <InfoRow
-            label={strings.theater.infoFields.lens}
-            value={asString(exif?.LensModel)}
-          />
-          <InfoRow
-            label={strings.theater.infoFields.focal}
-            value={formatFocal(exif?.FocalLength)}
-          />
-          <InfoRow
-            label={strings.theater.infoFields.aperture}
-            value={formatAperture(exif?.FNumber)}
-          />
-          <InfoRow
-            label={strings.theater.infoFields.shutter}
-            value={formatShutter(exif?.ExposureTime)}
-          />
-          <InfoRow
-            label={strings.theater.infoFields.iso}
-            value={asString(exif?.ISOSpeedRatings)}
-          />
-        </BottomSheetView>
+          {location ? (
+            <LocationMap
+              latitude={location.latitude}
+              longitude={location.longitude}
+            />
+          ) : null}
+          <MoreDetails>
+            <InfoRow
+              label={fields.camera}
+              value={formatCamera(exif.Make, exif.Model)}
+            />
+            <InfoRow label={fields.lens} value={asLens(exif.LensModel)} />
+            <InfoRow label={fields.focal} value={formatFocal(exif.FocalLength)} />
+            <InfoRow
+              label={fields.aperture}
+              value={formatAperture(exif.FNumber)}
+            />
+            <InfoRow
+              label={fields.shutter}
+              value={formatShutter(exif.ExposureTime)}
+            />
+            <InfoRow label={fields.iso} value={formatIso(exif.ISOSpeedRatings)} />
+            <InfoRow
+              label={fields.exposureBias}
+              value={formatExposureBias(exif.ExposureBiasValue)}
+            />
+            <InfoRow label={fields.flash} value={formatFlash(exif.Flash)} />
+            <InfoRow
+              label={fields.whiteBalance}
+              value={formatWhiteBalance(exif.WhiteBalance)}
+            />
+            <InfoRow
+              label={fields.orientation}
+              value={formatOrientation(exif.Orientation ?? info?.orientation)}
+            />
+            <InfoRow
+              label={fields.colorProfile}
+              value={formatColorProfile(exif.ProfileName, exif.ColorSpace)}
+            />
+            <InfoRow
+              label={fields.dateModified}
+              value={formatDate(asset.modificationTime)}
+            />
+            <InfoRow
+              label={fields.path}
+              value={info?.localUri?.replace(/^file:\/\//, "")}
+              multiline
+            />
+          </MoreDetails>
+        </BottomSheetScrollView>
       </Sheet>
     );
   },
 );
 
+function MoreDetails({ children }: { children: ReactNode }) {
+  const theme = useTheme();
+  const reduceMotion = useReducedMotion();
+  const [expanded, setExpanded] = useState(false);
+
+  const duration = reduceMotion
+    ? reducedMotion.instant
+    : shellMotion.duration.fast;
+
+  const chevronStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: withTiming(expanded ? "180deg" : "0deg", { duration }) }],
+  }));
+
+  return (
+    <>
+      <Pressable
+        onPress={() => setExpanded((e) => !e)}
+        style={({ pressed }) => [styles.moreHeader, { opacity: pressed ? 0.6 : 1 }]}
+        accessibilityRole="button"
+        accessibilityLabel={fields.moreDetailsA11y}
+        accessibilityState={{ expanded }}
+      >
+        <Text style={[type.body, { color: theme.textPrimary }]}>
+          {fields.moreDetails}
+        </Text>
+        <Animated.View style={chevronStyle}>
+          <ChevronDown size={20} strokeWidth={1.5} color={theme.textPrimary} />
+        </Animated.View>
+      </Pressable>
+      {expanded ? (
+        <Animated.View entering={FadeIn.duration(duration)}>
+          {children}
+        </Animated.View>
+      ) : null}
+    </>
+  );
+}
+
 function InfoRow({
   label,
   value,
+  multiline = false,
 }: {
   label: string;
   value: string | undefined | null;
+  multiline?: boolean;
 }) {
   const theme = useTheme();
   if (!value) return null;
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, multiline && styles.rowMultiline]}>
       <Text
         style={[
           type.caption,
@@ -111,6 +241,7 @@ function InfoRow({
           type.body,
           tabularNums,
           styles.value,
+          multiline && styles.valueMultiline,
           { color: theme.textPrimary },
         ]}
       >
@@ -120,51 +251,8 @@ function InfoRow({
   );
 }
 
-function asString(v: unknown): string | undefined {
-  if (v == null) return undefined;
-  if (typeof v === "string") return v.trim() || undefined;
-  if (typeof v === "number") return String(v);
-  return undefined;
-}
-
-function formatDate(ms: number | undefined): string | undefined {
-  if (!ms) return undefined;
-  return new Date(ms).toLocaleString();
-}
-
-function formatCamera(make: unknown, model: unknown): string | undefined {
-  const m = asString(make);
-  const md = asString(model);
-  if (m && md) return md.toLowerCase().startsWith(m.toLowerCase()) ? md : `${m} ${md}`;
-  return md ?? m;
-}
-
-function formatFocal(v: unknown): string | undefined {
-  const n = typeof v === "number" ? v : Number(v);
-  if (!Number.isFinite(n) || n <= 0) return undefined;
-  return `${Math.round(n)}mm`;
-}
-
-function formatAperture(v: unknown): string | undefined {
-  const n = typeof v === "number" ? v : Number(v);
-  if (!Number.isFinite(n) || n <= 0) return undefined;
-  return `f/${n.toFixed(1).replace(/\.0$/, "")}`;
-}
-
-function formatShutter(v: unknown): string | undefined {
-  const n = typeof v === "number" ? v : Number(v);
-  if (!Number.isFinite(n) || n <= 0) return undefined;
-  if (n >= 1) return `${n.toFixed(1).replace(/\.0$/, "")}s`;
-  const denom = Math.round(1 / n);
-  return `1/${denom}s`;
-}
-
-function formatSize(v: unknown): string | undefined {
-  const n = typeof v === "number" ? v : Number(v);
-  if (!Number.isFinite(n) || n <= 0) return undefined;
-  if (n >= 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} MB`;
-  if (n >= 1024) return `${(n / 1024).toFixed(0)} KB`;
-  return `${n} B`;
+function asLens(v: unknown): string | undefined {
+  return typeof v === "string" ? v.trim() || undefined : undefined;
 }
 
 const styles = StyleSheet.create({
@@ -178,11 +266,26 @@ const styles = StyleSheet.create({
     alignItems: "baseline",
     minHeight: 36,
     justifyContent: "space-between",
+    gap: 16,
+  },
+  rowMultiline: {
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: 0,
+    paddingVertical: 6,
   },
   value: {
+    flexShrink: 1,
     textAlign: "right",
   },
-  gap: {
-    height: 16,
+  valueMultiline: {
+    textAlign: "left",
+  },
+  moreHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    minHeight: 52,
+    marginTop: 8,
   },
 });
