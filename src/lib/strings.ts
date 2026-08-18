@@ -150,7 +150,7 @@ export const strings = {
       share: "Share",
       delete: "Delete",
       info: "View Info",
-      goToFolder: "Go to Folder",
+      goToFolder: "Go to Album",
     },
     infoFields: {
       name: "Name",
