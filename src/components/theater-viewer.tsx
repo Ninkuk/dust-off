@@ -18,8 +18,6 @@ import { strings } from "@/lib/strings";
 import { usePreferencesStore } from "@/state/preferences-store";
 import { reducedMotion, theaterMotion } from "@/theme";
 
-const CROSS_FADE_MS = 400;
-
 const HORIZ_COMMIT_RATIO = 0.25;
 const HORIZ_COMMIT_VELOCITY = 800;
 const VERT_COMMIT_PX = 120;
@@ -127,7 +125,7 @@ export function TheaterViewer({
     // Settings → Transition → "Hard cut" for themselves.
     const duration =
       transition === "cross-fade" && !reduceMotion
-        ? CROSS_FADE_MS
+        ? theaterMotion.duration.crossfade
         : reducedMotion.instant;
     if (frontIsA) {
       setSlotB(asset);
