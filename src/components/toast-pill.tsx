@@ -16,7 +16,12 @@ export function ToastPill({
   wrapped?: boolean;
 }) {
   const undo = useToastStore((s) => s.undo);
-  const message = toast.kind === "flash" ? toast.message : strings.toast.saved;
+  const message =
+    toast.kind === "flash"
+      ? toast.message
+      : toast.kind === "undo-unfavorite"
+        ? strings.toast.unfavorited
+        : strings.toast.saved;
   const showUndo = toast.kind !== "flash";
 
   const handleUndo = () => {

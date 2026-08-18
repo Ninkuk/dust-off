@@ -87,6 +87,9 @@ export const strings = {
   },
   toast: {
     saved: "Saved.",
+    // Confirmation for the remove direction of the favorite toggle. Rendering
+    // "Saved." for both directions asserted the opposite of an unfavorite.
+    unfavorited: "Unfavorited.",
     undo: "Undo",
     gone: "Gone.",
     reshuffled: "Reshuffled.",
