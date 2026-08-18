@@ -1,0 +1,4 @@
+{
+  "moderate": true,
+  "allowlist": ["GHSA-w3rx-r6r6-pgpr", "GHSA-5p2g-fcmc-qvqq"]
+}
