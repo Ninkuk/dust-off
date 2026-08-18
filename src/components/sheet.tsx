@@ -12,7 +12,7 @@ import {
   useRef,
 } from "react";
 import { BackHandler } from "react-native";
-import { useTheme } from "@/theme";
+import { ThemeProvider, useTheme } from "@/theme";
 
 type SheetProps = Omit<BottomSheetModalProps, "children" | "ref"> & {
   children: ReactNode;
@@ -84,7 +84,11 @@ export const Sheet = forwardRef<BottomSheetModal, SheetProps>(function Sheet(
       enableDynamicSizing
       {...props}
     >
-      {children}
+      {/* BottomSheetModal portals its children to the root host, which sits
+          outside every ThemeProvider — so a forced zone (theater) would fall
+          back to the shell theme and render black-on-black rows in light mode.
+          Re-broadcast the theme resolved at the declaration site. */}
+      <ThemeProvider value={theme}>{children}</ThemeProvider>
     </BottomSheetModal>
   );
 });
